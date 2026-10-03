@@ -1,0 +1,1 @@
+This folder contains the built output assets for the worker "trade-bazzar" generated at 2026-10-03T15:02:54.587Z.

@@ -1,0 +1,10 @@
+backend/venv/
+.venv/
+.venv-workers/
+.wrangler/
+__pycache__/
+*.pyc
+data/*.db
+.env
+admin_hash.txt
+python_modules/

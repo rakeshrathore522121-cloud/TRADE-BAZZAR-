@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fbfcfd">
+<title>TRADE BAZZAR</title>
+<link rel="stylesheet" href="/dashboard.css">
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- APP HEADER -->
+  <header class="app-header">
+    <button class="brand-logo" aria-label="TRADE BAZZAR" data-page="watchlist">
+      <span class="logo-bars"><i></i><i></i><i></i></span>
+      <span class="logo-hand">↗</span>
+    </button>
+    <div class="header-center" id="headerCenter">0 scripts · Watchlist 2</div>
+    <div class="header-user">
+      <div class="user-dot" id="headerUserInitial">M</div>
+      <div class="user-copy">
+        <strong id="headerUserName">User</strong>
+        <small id="headerClock">12:59:31</small>
+      </div>
+    </div>
+  </header>
+
+  <!-- NEWS TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="newsTicker">TRADE BAZZAR · Market update</div>
+  </div>
+
+  <main class="app-content">
+
+    <!-- WATCHLIST -->
+    <section id="view-watchlist" class="screen active">
+      <div class="balance-panel">
+        <div class="balance-main">
+          <span>AVAILABLE BALANCE</span>
+          <strong id="balance">₹0</strong>
+        </div>
+        <div class="balance-mini-grid">
+          <button class="summary-card" data-page="positions">
+            <span>POSITIONS / ORDERS <b>›</b></span>
+            <strong><em id="positionCount">0</em> / <em id="orderCount">0</em></strong>
+          </button>
+          <button class="summary-card" data-page="trade">
+            <span>BOOKED P/L <b>›</b></span>
+            <strong id="bookedPnl">—</strong>
+          </button>
+        </div>
+        <div class="fund-actions">
+          <button class="fund-btn primary" data-page="deposit"><span>↓</span> DEPOSIT</button>
+          <button class="fund-btn" data-page="withdraw"><span>↑</span> WITHDRAW</button>
+        </div>
+      </div>
+
+      <div class="watch-toolbar">
+        <div class="watch-tabs">
+          <button data-list="1">Watchlist 1</button>
+          <button data-list="2" class="active">Watchlist 2</button>
+        </div>
+        <button class="icon-control search-open" aria-label="Search scripts">⌕</button>
+        <button class="add-script-control" id="addScriptBtn">+ Add script</button>
+        <button class="tv-control" id="tvBtn"><span></span> TV</button>
+        <button class="icon-control" id="quickAddBtn" aria-label="Add">+</button>
+      </div>
+
+      <div class="watch-head">
+        <span>INSTRUMENT · LTP · CHG%</span>
+        <b>BID</b>
+        <b>ASK</b>
+      </div>
+      <div id="watchlist" class="watch-list"></div>
+      <div id="watchEmpty" class="empty-watch">No scripts. Tap <strong>+ Add</strong> to add instruments.</div>
+    </section>
+
+    <!-- TRADE / TRANSACTIONS -->
+    <section id="view-trade" class="screen">
+      <div class="screen-header">
+        <div class="brand-mini">TB</div>
+        <div class="screen-counter" id="tradeCounter">0 txns · P&amp;L ...</div>
+        <button class="refresh-button" id="refreshTrade">↻</button>
+      </div>
+      <div class="period-tabs" id="periodTabs">
+        <button class="active" data-period="TODAY">TODAY</button>
+        <button data-period="WEEK">WEEK</button>
+        <button data-period="MONTH">MONTH</button>
+        <button data-period="CUSTOM">CUSTOM</button>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric">
+          <span>REALIZED P&amp;L (PERIOD)</span>
+          <strong class="positive" id="realizedPnl">+0.0</strong>
+        </div>
+        <div class="metric right">
+          <span>BROKERAGE (PERIOD)</span>
+          <strong id="brokerage">0.0</strong>
+        </div>
+        <div class="metric compact"><span>TXNS</span><strong id="txnCount">0</strong></div>
+        <div class="metric compact"><span>TRADES / LEDGER</span><strong><i id="tradeCount">0</i> · <i id="ledgerCount">0</i></strong></div>
+        <div class="metric compact"><span>VOLUME</span><strong id="tradeVolume">0.0</strong></div>
+      </div>
+      <div class="subtabs" id="tradeSubtabs">
+        <button class="active" data-subtab="ALL">ALL</button>
+        <button data-subtab="LEDGER">LEDGER</button>
+      </div>
+      <div id="tradeActivity" class="activity-list"></div>
+    </section>
+
+    <!-- POSITIONS -->
+    <section id="view-positions" class="screen">
+      <div class="screen-header">
+        <div class="brand-mini">TB</div>
+        <div class="screen-icons"><button>↗</button><button>▥</button><button id="refreshPositions">↻</button></div>
+      </div>
+      <div class="position-summary">
+        <div><span>BALANCE</span><strong id="positionBalance">0</strong></div>
+        <div><span>LIVE P/L</span><strong class="positive" id="livePnl">+0</strong></div>
+        <div><span>BOOKED</span><strong class="positive" id="positionBooked">+0</strong></div>
+      </div>
+      <div id="positionsList" class="positions-empty-card">
+        <div class="empty-position">
+          <strong>No open positions</strong>
+          <span>Open a position from watchlist to start trading</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ORDERS -->
+    <section id="view-orders" class="screen">
+      <div class="screen-header">
+        <div class="brand-mini">TB</div>
+        <div class="screen-counter"><span id="ordersTotal">0</span> total</div>
+        <button class="refresh-button" id="refreshOrders">↻</button>
+      </div>
+      <div class="order-tabs" id="orderTabs">
+        <button class="active" data-order-filter="ALL">ALL</button>
+        <button data-order-filter="PENDING">PENDING</button>
+        <button data-order-filter="EXEC">EXEC</button>
+        <button data-order-filter="REJ">REJ</button>
+      </div>
+      <div id="ordersList" class="orders-list"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="screen">
+      <div class="screen-header">
+        <div class="brand-mini">TB</div>
+        <span>TRADE-BAZZAR</span>
+        <div class="header-user compact-user">
+          <div class="user-dot" id="settingsUserInitial">M</div>
+          <strong id="settingsUserName">User</strong>
+        </div>
+      </div>
+      <div class="settings-balance">
+        <span>AVAILABLE BALANCE</span>
+        <strong id="settingsBalance">0.0</strong>
+        <div>
+          <button data-page="deposit"><b>DEPOSITS</b><strong class="positive" id="settingsDeposits">0.0</strong></button>
+          <button data-page="withdraw"><b>WITHDRAWALS</b><strong class="negative" id="settingsWithdrawals">0.0</strong></button>
+        </div>
+        <div class="settings-fund-buttons">
+          <button class="primary" data-page="deposit">Deposit</button>
+          <button data-page="withdraw">Withdraw</button>
+        </div>
+      </div>
+
+      <h3 class="section-label">ACCOUNT</h3>
+      <div class="settings-menu">
+        <button data-page="account"><span class="setting-icon">♙</span><div><b>My Account</b><small id="accountSub">User profile</small></div><i>›</i></button>
+        <button data-page="ledger"><span class="setting-icon">▤</span><div><b>Ledger History</b><small id="ledgerSub">0 transactions</small></div><i>›</i></button>
+        <button data-page="rejections"><span class="setting-icon">!</span><div><b>Rejection Logs</b><small id="rejectSub">Rejected requests</small></div><i>›</i></button>
+        <button data-page="bill"><span class="setting-icon">↓</span><div><b>Bill Download</b><small>Statement PDF by week or custom dates</small></div><i>›</i></button>
+        <button data-page="password"><span class="setting-icon">⌕</span><div><b>Change Password</b><small>Update account password</small></div><i>›</i></button>
+        <button data-page="terms"><span class="setting-icon">▢</span><div><b>View App T&amp;C</b><small>Terms and conditions</small></div><i>›</i></button>
+      </div>
+
+      <h3 class="section-label">PREFERENCES</h3>
+      <div class="preferences">
+        <div class="pref-row">
+          <span class="setting-icon">☼</span><div><b>Theme</b><small>Optimized for both light and dark modes.</small></div>
+          <div class="segmented theme-segment"><button data-theme="dark">DARK</button><button class="active" data-theme="light">LIGHT</button></div>
+        </div>
+        <div class="pref-row">
+          <span class="setting-icon">◉</span><div><b>Hide balances</b><small>Mask all balance amounts.</small></div>
+          <button class="switch" id="hideBalances"><i></i></button>
+        </div>
+        <div class="pref-row">
+          <span class="setting-icon">∿</span><div><b>Trade sounds</b><small>Play tones for trade events.</small></div>
+          <button class="switch on" id="tradeSounds"><i></i></button>
+        </div>
+        <div class="pref-row">
+          <span class="setting-icon">T</span><div><b>Number size</b><small>Size of prices, P&amp;L and other figures.</small></div>
+          <div class="segmented number-segment"><button class="active" data-size="S">S</button><button data-size="M">M</button><button data-size="L">L</button><button data-size="XL">XL</button></div>
+        </div>
+        <div class="pref-row">
+          <span class="setting-icon">B</span><div><b>Bold numbers</b><small>Make all figures heavier and easier to read.</small></div>
+          <button class="switch" id="boldNumbers"><i></i></button>
+        </div>
+      </div>
+      <button class="logout-big" id="logoutSettings">⇥&nbsp; Logout</button>
+    </section>
+
+    <!-- STOCK DETAIL -->
+    <section id="view-detail" class="screen detail-screen">
+      <button class="back-button" data-page="watchlist">‹</button>
+      <div class="detail-title"><strong id="detailSymbol">RELIANCE</strong><small>NSE</small></div>
+      <div class="detail-price" id="detailPrice">₹—</div>
+      <div class="detail-change" id="detailChange">+₹0.00&nbsp;&nbsp;+0.00%</div>
+      <div class="detail-rule"></div>
+      <button class="detail-buy" id="detailBuy">BUY</button>
+      <button class="detail-sell" id="detailSell">SELL</button>
+    </section>
+
+    <!-- BUY / SELL -->
+    <section id="view-trade-order" class="screen order-screen">
+      <button class="back-button" data-page="detail">‹</button>
+      <div class="trade-instrument"><strong id="tradeOrderSymbol">RELIANCE</strong><small>NSE</small></div>
+      <h2 id="tradeSideTitle">BUY</h2>
+      <div class="trade-field readonly"><span>LTP</span><strong id="tradeLtp">₹—</strong></div>
+      <label class="trade-field"><span>QUANTITY</span><input id="tradeQty" type="number" min="1" inputmode="numeric"></label>
+      <label class="trade-field"><span>PRICE</span><input id="tradePrice" type="number" min="0.01" step="0.01" inputmode="decimal"></label>
+      <div class="available-row"><span>Available Balance</span><strong id="tradeFunds">₹0.00</strong></div>
+      <div class="available-row"><span>Order Value</span><strong id="orderValue">₹0.00</strong></div>
+      <button class="place-order" id="placeOrder">BUY</button>
+    </section>
+
+    <!-- DEPOSIT -->
+    <section id="view-deposit" class="screen inner-screen">
+      <div class="inner-title"><button class="back-button" data-page="watchlist">‹</button><strong>DEPOSIT</strong></div>
+      <div class="available-large"><span>AVAILABLE BALANCE</span><strong id="depositBalance">₹0.00</strong></div>
+      <label class="field-label">DEPOSIT AMOUNT<div class="input-box">₹ <input id="depAmount" type="number" min="1" placeholder="Enter amount"></div></label>
+      <div class="or">OR</div>
+      <div class="scan-pay">SCAN &amp; PAY</div>
+      <div class="qr-box"><img id="depositQr" alt="QR CODE"><span id="qrPlaceholder">QR CODE</span></div>
+      <div class="upi-row"><div><span>UPI ID</span><strong id="depositUpi">tradebazzar@upi</strong></div><button id="copyUpi">COPY</button></div>
+      <label class="field-label">PAYMENT REFERENCE<div class="input-box"><input id="depUtr" placeholder="Enter UTR / transaction reference"></div></label>
+      <button class="full-primary" id="depSubmit">PAYMENT DONE</button>
+      <div class="request-note">Your deposit is Safe ADD Fund and your balance is updated.</div>
+      <div id="depHistory" class="history-list"></div>
+    </section>
+
+    <!-- WITHDRAW -->
+    <section id="view-withdraw" class="screen inner-screen">
+      <div class="inner-title"><button class="back-button" data-page="watchlist">‹</button><strong>WITHDRAW</strong></div>
+      <div class="available-large"><span>AVAILABLE BALANCE</span><strong id="withdrawBalance">₹0.00</strong></div>
+      <label class="field-label">WITHDRAW AMOUNT<div class="input-box">₹ <input id="wdAmount" type="number" min="1" placeholder="Enter amount"></div></label>
+      <div class="withdraw-choice"><button class="active" data-withdraw="upi">○ UPI</button><button data-withdraw="bank">○ BANK ACCOUNT</button></div>
+      <div id="upiWithdrawBox"><div class="input-box"><input id="wdUpi" placeholder="UPI ID"></div></div>
+      <div id="bankWithdrawBox" class="hidden-fields"><div class="input-box"><input id="wdBank" placeholder="Bank Name"></div><div class="input-box"><input id="wdAccount" placeholder="Account Number"></div><div class="input-box"><input id="wdIfsc" placeholder="IFSC"></div></div>
+      <button class="full-primary" id="wdSubmit">WITHDRAW</button>
+      <div class="request-note">Withdrawal requests are sent to ADMIN for approval.</div>
+      <div id="wdHistory" class="history-list"></div>
+    </section>
+
+    <!-- ACCOUNT -->
+    <section id="view-account" class="screen inner-screen">
+      <div class="inner-title"><button class="back-button" data-page="settings">‹</button><strong>MY ACCOUNT</strong></div>
+      <div class="account-avatar">♙</div>
+      <div class="account-user-id">USER ID<strong id="accountUserId">—</strong></div>
+      <div id="accountDetails" class="profile-list"></div>
+    </section>
+
+    <!-- LEDGER -->
+    <section id="view-ledger" class="screen inner-screen">
+      <div class="inner-title"><button class="back-button" data-page="settings">‹</button><strong>LEDGER HISTORY</strong></div>
+      <div class="ledger-tabs"><button class="active">TODAY</button><button>WEEK</button><button>MONTH</button><button>CUSTOM</button></div>
+      <div id="ledgerList" class="ledger-list"></div>
+    </section>
+
+    <!-- REJECTION -->
+    <section id="view-rejections" class="screen inner-screen">
+      <div class="inner-title"><button class="back-button" data-page="settings">‹</button><strong>REJECTION LOGS</strong></div>
+      <div id="rejectionList" class="rejection-list"></div>
+    </section>
+
+    <!-- BILL -->
+    <section id="view-bill" class="screen inner-screen">
+      <div class="inner-title"><button class="back-button" data-page="settings">‹</button><strong>BILL DOWNLOAD</strong></div>
+      <p class="sub-copy">Select a trade below to print or save its statement as PDF.</p>
+      <div id="billList" class="bill-list"></div>
+    </section>
+
+    <!-- PASSWORD -->
+    <section id="view-password" class="screen inner-screen">
+      <div class="inner-title"><button class="back-button" data-page="settings">‹</button><strong>CHANGE PASSWORD</strong></div>
+      <label class="field-label">CURRENT PASSWORD<div class="input-box"><input id="oldPw" type="password"></div></label>
+      <label class="field-label">NEW PASSWORD<div class="input-box"><input id="newPw" type="password"></div></label>
+      <label class="field-label">CONFIRM PASSWORD<div class="input-box"><input id="newPw2" type="password"></div></label>
+      <button class="full-primary" id="changePw">UPDATE PASSWORD</button>
+    </section>
+
+    <!-- TERMS -->
+    <section id="view-terms" class="screen inner-screen terms-screen">
+      <div class="inner-title"><button class="back-button" data-page="settings">‹</button><strong>VIEW APP T&amp;C</strong></div>
+      <h3>Terms and Conditions</h3>
+      <p> TRADE_BAZZAR   </p>
+      <p>
+By using the TRADE_BAZZAR platform and its trading services, you acknowledge and agree to the following Terms & Conditions: </p>
+      <p>1. Company-Authorized Square-Off
+
+If any trade or position is moving into a loss, the Company reserves the right to square off or close the position at its discretion. The Company may take such action to manage trading risk and protect the account and platform.</p>
+      <p>2. Password Security
+
+After receiving your account ID and password from the Company, you are required to change your password immediately and maintain the confidentiality of your login credentials.  </p>
+      <p>You are responsible for keeping your account credentials secure and must not share them with any unauthorized person.    </p>
+      <p>3. 3X Margin Facility
+
+The Company may provide a 3X margin facility to eligible users. This facility is applicable only to the first deposit made by the user and is subject to the Company’s applicable terms and conditions. </p>
+      <p>The 3X margin facility may be modified, restricted, or withdrawn by the Company at its discretion.  .</p>
+      <p> 4. Live Market Access
+
+Live market information and trading-related market displays will become available after the required account balance has been successfully added to the user’s account. </p>
+      <p> 5. Minimum First Deposit
+
+The minimum amount required for the first deposit is ₹20,000.   </p>
+      <p>Accounts that do not meet the minimum first-deposit requirement may not be eligible for the applicable trading facilities.
+ </p>
+      <p>6. UTR Submission
+
+After making a deposit, the user is required to submit the UTR (Unique Transaction Reference) number or applicable payment transaction details to the Company for verification.  .</p>
+      <p>The deposited amount may be credited only after successful verification.  </p>
+      <p>  7. Account Creation
+
+New trading accounts will be created and provided only by the Company..</p>
+      <p> Users are not permitted to create, sell, transfer, or operate unauthorized accounts.
+ </p>
+      <p>8. Chart Availability
+
+Trading charts and related charting information will be displayed when the required chart data is made available or enabled by the Company.  .</p>
+      <p> Chart availability may depend on the Company’s systems, data sources, and technical conditions. </p>
+      <p>9. Trade Monitoring
+
+The Company reserves the right to monitor and review trades conducted through the platform.
+  .</p>
+      <p>All trades may be reviewed by the Company for operational, risk-management, security, and compliance purposes.
+  </p>
+      <p>10. Additional Information
+
+For any additional information, clarification, account-related assistance, or details regarding these Terms & Conditions, users should contact an authorized TRADE_BAZZAR Company employee.  </p>
+      <p>The Company may provide additional instructions, requirements, or conditions where applicable.  </p>
+      <p> ⸻ </p>
+       <p>Acceptance of Terms.  </p>
+    </section>
+  </main>
+
+  <!-- SEARCH MODAL -->
+  <div class="modal-backdrop" id="scriptModal">
+    <div class="modal-card">
+      <button class="modal-close" data-close="scriptModal">×</button>
+      <div class="search-input-wrap">⌕<input id="scriptSearch" placeholder="Search scripts..." autocomplete="off"><span id="scriptCount">7 added</span></div>
+      <div class="script-tabs"><button class="active" data-script-tab="EQUITY">EQUITY</button><button data-script-tab="FUTURES">FUTURES</button><button data-script-tab="OPTIONS">OPTIONS</button><button data-script-tab="MCX">MCX</button><button data-script-tab="FOREX">FOREX</button></div>
+      <div id="scriptResults" class="script-results"></div>
+    </div>
+  </div>
+
+  <!-- LOGOUT MODAL -->
+  <div class="modal-backdrop" id="logoutModal">
+    <div class="confirm-card">
+      <h3>Are you sure you want to logout?</h3>
+      <div><button data-close="logoutModal">CANCEL</button><button class="danger-fill" id="confirmLogout">LOGOUT</button></div>
+    </div>
+  </div>
+
+  <div id="toast" role="status"></div>
+  <nav class="bottom-nav">
+    <button data-page="watchlist" class="active"><span class="nav-icon">◉</span><strong>WATCHLIST</strong></button>
+    <button data-page="trade"><span class="nav-icon">⌁</span><strong>TRADE</strong></button>
+    <button data-page="positions"><span class="nav-icon">▥</span><strong>POSITIONS</strong></button>
+    <button data-page="orders"><span class="nav-icon">▤</span><strong>ORDERS</strong></button>
+    <button data-page="settings"><span class="nav-icon">⚙</span><strong>SETTINGS</strong></button>
+  </nav>
+</div>
+<script src="/dashboard.js"></script>
+</body>
+</html>

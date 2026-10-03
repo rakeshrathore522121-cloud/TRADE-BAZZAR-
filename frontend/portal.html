@@ -1,0 +1,20 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TRADE BAZZAR Portal</title><link rel="stylesheet" href="/dashboard.css"></head>
+<body>
+<header class="topbar"><div class="mini-brand"><span>TB</span><b>TRADE BAZZAR</b></div><button id="logout">Logout</button></header>
+<main class="page">
+<div class="panel"><h2>Trading Portal</h2><p style="color:#777">Use the dashboard for Watchlist, Trade, Positions and Orders.</p></div>
+<div class="panel">
+<h2>Deposit</h2><div id="depositSettings"></div>
+<div class="form-grid"><input id="depAmount" type="number" placeholder="Amount"><input id="utr" placeholder="UTR / Transaction ID"><button class="primary" id="depBtn">SUBMIT DEPOSIT REQUEST</button></div></div>
+<div class="panel"><h2>Withdraw</h2><div class="form-grid"><input id="wdAmount" type="number" placeholder="Amount"><input id="upi" placeholder="UPI ID"><input id="bank" placeholder="Bank Name"><input id="account" placeholder="Account Number"><input id="ifsc" placeholder="IFSC"><button class="primary" id="wdBtn">SUBMIT WITHDRAWAL REQUEST</button></div></div>
+<div class="panel"><h2>Change Password</h2><div class="form-grid"><input id="old" type="password" placeholder="Current password"><input id="newp" type="password" placeholder="New password"><button class="primary" id="cpBtn">CHANGE PASSWORD</button></div></div>
+</main>
+<script>
+const api=async(u,o={})=>{const r=await fetch("/api"+u,{credentials:"include",headers:{"Content-Type":"application/json"},...o});const d=await r.json();if(!r.ok)throw Error(d.message);return d};
+(async()=>{try{const s=(await api("/settings")).settings;document.querySelector("#depositSettings").innerHTML="<p><b>UPI:</b> "+s.upi_id+"</p>"+(s.qr_image?'<img src="'+s.qr_image+'" style="max-width:220px;border-radius:14px">':"");}catch{location.href="/"}})();
+document.querySelector("#depBtn").onclick=async()=>{try{alert((await api("/deposits",{method:"POST",body:JSON.stringify({amount:+depAmount.value,utr:utr.value})})).message)}catch(e){alert(e.message)}};
+document.querySelector("#wdBtn").onclick=async()=>{try{alert((await api("/withdrawals",{method:"POST",body:JSON.stringify({amount:+wdAmount.value,upi_id:upi.value,bank_name:bank.value,account_no:account.value,ifsc:ifsc.value})})).message)}catch(e){alert(e.message)}};
+document.querySelector("#cpBtn").onclick=async()=>{try{alert((await api("/change-password",{method:"POST",body:JSON.stringify({old_password:old.value,new_password:newp.value})})).message)}catch(e){alert(e.message)}};
+document.querySelector("#logout").onclick=async()=>{await api("/logout",{method:"POST"});location.href="/"};
+</script></body></html>

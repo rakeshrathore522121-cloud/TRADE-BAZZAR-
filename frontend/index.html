@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7fafc">
+<title>TRADE BAZZAR — Login</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="login-page">
+<main class="login-shell">
+  <section class="login-card">
+    <div class="login-logo brand-logo">
+      <span class="logo-bars"><i></i><i></i><i></i></span><span class="logo-hand">↗</span>
+    </div>
+    <div class="brand-name">TRADE BAZZAR</div>
+    <h1>Welcome Back</h1>
+    <p class="login-subtitle">Sign in to your account</p>
+
+    <form id="loginForm">
+      <label>Username</label>
+      <div class="input-wrap"><span>👤</span><input id="userId" autocomplete="username" required placeholder="Username"></div>
+      <label>Password</label>
+      <div class="input-wrap"><span>🔒</span><input id="password" type="password" autocomplete="current-password" required placeholder="Password"><button type="button" id="togglePassword">👁</button></div>
+      <button class="gold-btn" type="submit">SIGN IN</button>
+    </form>
+    <button class="link-btn" id="forgotBtn">Forgot Password?</button>
+
+    <div class="benefits">
+      <div><b>🪙</b><strong>0</strong><small>BROKERAGE</small></div>
+      <div><b>📈</b><strong>3×</strong><small>MARGIN</small></div>
+      <div><b>⚡</b><strong>10 MIN</strong><small>PAYOUT</small></div>
+      <div><b>🛡️</b><strong>10L+</strong><small>TRUSTED<br>USERS</small></div>
+    </div>
+    <p id="loginMsg" class="form-msg"></p>
+  </section>
+</main>
+<script src="/script.js"></script>
+</body>
+</html>
