@@ -198,3 +198,364 @@ body.dark .ticker-wrap,body.dark .app-header{background:var(--bg)}body.dark .mod
   .screen{padding-left:25px;padding-right:25px}.header-center{font-size:16px}.header-user{min-width:90px}.user-copy strong{font-size:15px}.user-copy small{font-size:10px}.watch-toolbar{grid-template-columns:minmax(125px,1fr) 52px auto 76px 45px}.add-script-control{font-size:13px;padding:0 8px}.tv-control{font-size:13px}.icon-control{font-size:27px}.watch-head{font-size:11px;grid-template-columns:minmax(0,1fr) 62px 62px}.watch-row{grid-template-columns:minmax(0,1fr) 62px 62px}.watch-row .instrument{min-width:0}.watch-row .instrument b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.quote-cell strong{font-size:13px;min-width:55px;padding:8px 3px}.quote-cell small{font-size:11px}.watch-row .instrument b{font-size:16px}.watch-row .ltp{font-size:15px}.watch-row .change{font-size:12px}.empty-watch{font-size:17px;padding-top:70px}.fund-btn{font-size:16px;letter-spacing:1px}.fund-btn span{font-size:25px}.balance-mini-grid{gap:12px}.summary-card{padding:20px 16px}.summary-card span{font-size:13px}.summary-card strong{font-size:26px}.period-tabs button,.order-tabs button{font-size:13px;height:52px}.metrics-grid{gap:19px 12px}.metric span{font-size:12px;letter-spacing:1.2px}.metric strong{font-size:28px}.metric.compact strong{font-size:24px}.position-summary span{font-size:11px}.position-summary strong{font-size:23px}.settings-balance>strong,.available-large strong{font-size:43px}.pref-row{grid-template-columns:57px 1fr auto}.pref-row small{font-size:14px}.segmented button{padding:0 9px;font-size:13px}.switch{width:84px;height:50px}.switch i{width:42px;height:42px}.switch.on i{left:38px}.logout-big{height:75px;font-size:24px}.bottom-nav{height:91px;padding:10px 4px max(8px,env(safe-area-inset-bottom))}.bottom-nav button{gap:4px}.bottom-nav button strong{font-size:11px;letter-spacing:.8px}.nav-icon{font-size:29px!important}.screen-header{height:80px}.screen-counter{font-size:18px}
 }
 @media(min-width:900px){.app-content{box-shadow:0 0 0 1px var(--line);min-height:100dvh}}
+
+/* =========================================================
+   MOBILE COMPACT FIX — TRADE BAZZAR
+   Reference target: compact iPhone layout.
+   Desktop/tablet styles remain unchanged.
+   ========================================================= */
+@media (max-width:480px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body{padding-bottom:78px;letter-spacing:0}
+
+  .app-header{
+    height:76px;
+    grid-template-columns:58px minmax(0,1fr) auto;
+    padding:0 12px 8px;
+  }
+  .brand-logo{width:54px;height:54px;border-width:2px}
+  .brand-logo .logo-bars{left:13px;bottom:13px;height:28px;gap:2px}
+  .brand-logo .logo-bars i{width:6px}
+  .brand-logo .logo-bars i:nth-child(1){height:12px}
+  .brand-logo .logo-bars i:nth-child(2){height:21px}
+  .brand-logo .logo-bars i:nth-child(3){height:28px}
+  .brand-logo .logo-hand{font-size:24px;right:5px;bottom:8px}
+  .header-center{font-size:15px;margin:0;text-align:center;overflow:hidden;text-overflow:ellipsis}
+  .header-user{min-width:78px;gap:0}
+  .user-copy strong{font-size:14px;line-height:1.1}
+  .user-copy small{font-size:10px;margin-top:2px}
+  .ticker-wrap{height:34px}
+  .ticker-track{height:34px;line-height:34px;font-size:13px}
+
+  .app-content{width:100%;max-width:none}
+  .screen{min-height:calc(100dvh - 110px);padding:0 12px 18px}
+
+  /* Compact balance area */
+  .balance-panel{
+    margin:0 -12px;
+    padding:14px 12px 14px;
+    border-radius:0 0 22px 22px;
+  }
+  .balance-main{border-radius:22px;padding:13px 14px 14px}
+  .balance-main span,.available-large span,.settings-balance>span{
+    font-size:12px;letter-spacing:1.4px
+  }
+  .balance-main strong{font-size:28px;line-height:1.05;margin-top:5px}
+  .balance-mini-grid{gap:10px;margin-top:11px}
+  .summary-card{border-radius:22px;padding:13px 13px;min-height:83px}
+  .summary-card span{font-size:11px;letter-spacing:.8px;line-height:1.15}
+  .summary-card span b{font-size:22px;line-height:10px}
+  .summary-card strong{font-size:23px;margin-top:9px}
+  .fund-actions{gap:10px;margin-top:11px}
+  .fund-btn{height:54px;border-radius:28px;font-size:14px;letter-spacing:.8px}
+  .fund-btn span{font-size:21px;margin-right:4px}
+
+  /* Watchlist toolbar: never overlap; scroll horizontally if needed */
+  .watch-toolbar{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:10px 0 0;
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .watch-toolbar::-webkit-scrollbar{display:none}
+  .watch-tabs{flex:0 0 auto;gap:12px}
+  .watch-tabs button{font-size:14px;padding:7px 0 6px;border-bottom-width:3px}
+  .icon-control,.add-script-control,.tv-control{height:45px;flex:0 0 auto;border-radius:23px}
+  .icon-control{width:50px;font-size:23px}
+  .add-script-control{font-size:13px;padding:0 12px}
+  .tv-control{font-size:12px;padding:0 12px}
+  .tv-control span{width:9px;height:9px}
+
+  .watch-head{
+    grid-template-columns:minmax(0,1fr) 58px 58px;
+    padding:12px 4px 9px;
+    font-size:10px;
+    letter-spacing:.6px;
+  }
+  .watch-row{
+    grid-template-columns:minmax(0,1fr) 58px 58px;
+    padding:12px 3px;
+    min-height:91px;
+  }
+  .instrument-title{gap:5px}
+  .watch-row .instrument b{font-size:16px;line-height:1.05}
+  .watch-row .instrument small,.contract-meta{font-size:10px;margin-top:2px}
+  .fno-badge{padding:2px 4px;font-size:8px;border-radius:5px}
+  .instrument-market{gap:5px;margin-top:4px}
+  .instrument-market .ltp{font-size:15px}
+  .instrument-market .change{font-size:11px}
+  .quote-cell strong{min-width:51px;padding:7px 3px;border-radius:15px;font-size:13px}
+  .quote-cell small{font-size:10px;margin-top:3px}
+  .remove-script{width:21px;height:21px;flex-basis:21px;font-size:12px}
+
+  /* Bottom nav */
+  .bottom-nav{
+    height:76px;
+    padding:5px 2px max(5px,env(safe-area-inset-bottom));
+    border-radius:0;
+  }
+  .bottom-nav button{gap:2px;padding:3px 1px 1px}
+  .bottom-nav .nav-icon{width:27px;height:27px;flex-basis:27px;font-size:23px!important}
+  .bottom-nav button strong{font-size:9px;letter-spacing:.45px;line-height:1}
+
+  /* Other screens */
+  .screen-header{height:64px}
+  .brand-mini{width:38px;height:38px;font-size:12px}
+  .screen-counter{font-size:15px}
+  .screen-icons{gap:6px}.screen-icons button{font-size:22px}
+  .refresh-button{font-size:25px}
+  .period-tabs,.order-tabs{margin:9px 0 17px;border-radius:28px}
+  .period-tabs button,.order-tabs button{height:44px;font-size:11px}
+  .metrics-grid{gap:14px 12px;padding:3px 4px 20px}
+  .metric span{font-size:10px;letter-spacing:.8px}
+  .metric strong,.metric.compact strong{font-size:22px;margin-top:5px}
+  .subtabs{gap:8px;padding:12px 0}
+  .subtabs button,.ledger-tabs button{padding:8px 14px;font-size:11px}
+  .position-summary{gap:7px;padding:11px 0 14px}
+  .position-summary div{border-radius:18px;padding:13px 10px}
+  .position-summary span{font-size:9px;letter-spacing:.7px}
+  .position-summary strong{font-size:21px;margin-top:7px}
+  .positions-empty-card{border-radius:22px;min-height:220px}
+  .empty-position strong{font-size:19px}.empty-position span{font-size:14px}
+
+  .screen-header span{font-size:13px}
+  .section-label{font-size:12px;letter-spacing:1.2px;padding:10px 4px 5px}
+  .settings-menu button{grid-template-columns:50px 1fr 14px;gap:8px;padding:10px 4px}
+  .setting-icon{width:42px;height:42px;font-size:19px}
+  .settings-menu b,.preferences b{font-size:15px}
+  .settings-menu small,.preferences small{font-size:11px;line-height:1.25}
+  .pref-row{grid-template-columns:45px minmax(0,1fr) auto;gap:7px;padding:11px 0}
+  .segmented{height:42px;border-radius:21px}
+  .segmented button{padding:0 7px;font-size:11px}
+  .switch{width:70px;height:40px}.switch i{width:32px;height:32px}.switch.on i{left:33px}
+  .logout-big{height:58px;border-radius:20px;font-size:20px;margin:18px 0 10px}
+
+  .inner-title{height:62px;gap:9px;font-size:15px}
+  .back-button{font-size:35px;width:30px}
+  .field-label{font-size:12px;margin:16px 0}
+  .input-box{height:50px;border-radius:13px;padding:0 13px;font-size:15px}
+  .full-primary{height:53px;border-radius:13px;font-size:15px}
+  .request-note{font-size:11px;padding:10px}
+  .detail-price{font-size:29px;margin-top:30px}
+  .detail-change{font-size:14px}
+  .detail-sell,.place-order{height:53px;font-size:16px}
+  .search-input-wrap{height:50px;border-radius:25px;margin:12px 14px 0;font-size:24px}
+  .search-input-wrap input{font-size:15px}
+  .script-tabs button{height:51px;font-size:12px}.script-tabs small{font-size:10px}
+  .script-row{padding:15px 16px}.script-row b{font-size:15px}.script-row small{font-size:11px;margin-top:5px}
+  .script-action{width:44px;height:44px;font-size:22px}
+
+  /* Number size preference — applies to actual figures, not just balance */
+  body.size-S .balance-main strong{font-size:28px}
+  body.size-M .balance-main strong{font-size:33px}
+  body.size-L .balance-main strong{font-size:39px}
+  body.size-XL .balance-main strong{font-size:46px}
+
+  body.size-S .summary-card strong{font-size:23px}
+  body.size-M .summary-card strong{font-size:27px}
+  body.size-L .summary-card strong{font-size:31px}
+  body.size-XL .summary-card strong{font-size:36px}
+
+  body.size-S .instrument-market .ltp,body.size-S .quote-cell strong{font-size:15px}
+  body.size-M .instrument-market .ltp,body.size-M .quote-cell strong{font-size:17px}
+  body.size-L .instrument-market .ltp,body.size-L .quote-cell strong{font-size:19px}
+  body.size-XL .instrument-market .ltp,body.size-XL .quote-cell strong{font-size:21px}
+
+  body.size-S .metric strong,body.size-S .position-summary strong{font-size:22px}
+  body.size-M .metric strong,body.size-M .position-summary strong{font-size:25px}
+  body.size-L .metric strong,body.size-L .position-summary strong{font-size:29px}
+  body.size-XL .metric strong,body.size-XL .position-summary strong{font-size:33px}
+
+  body.size-S .settings-balance>strong,body.size-S .available-large strong{font-size:28px}
+  body.size-M .settings-balance>strong,body.size-M .available-large strong{font-size:34px}
+  body.size-L .settings-balance>strong,body.size-L .available-large strong{font-size:40px}
+  body.size-XL .settings-balance>strong,body.size-XL .available-large strong{font-size:47px}
+
+  body.size-S .detail-price{font-size:29px}
+  body.size-M .detail-price{font-size:34px}
+  body.size-L .detail-price{font-size:40px}
+  body.size-XL .detail-price{font-size:50px}
+
+  /* Prevent preference controls from pushing/overlapping text */
+  .pref-row>div:nth-child(2){min-width:0}
+  .pref-row>div:nth-child(2) small{display:block;max-width:190px}
+  .number-segment{flex:0 0 auto}
+}
+
+
+/* =========================================================
+   TRADE BAZZAR — EXTRA COMPACT MOBILE / SIZE-S FIX
+   Keeps desktop unchanged. S is intentionally smaller.
+   ========================================================= */
+@media (max-width:480px){
+  /* General compact typography */
+  body.size-S{font-size:12px}
+  body.size-S .app-header{height:68px;padding:0 10px 5px}
+  body.size-S .brand-logo{width:48px;height:48px}
+  body.size-S .header-center{font-size:13px}
+  body.size-S .user-copy strong{font-size:12px}
+  body.size-S .user-copy small{font-size:9px}
+  body.size-S .ticker-wrap,body.size-S .ticker-track{height:30px}
+  body.size-S .ticker-track{line-height:30px;font-size:11px}
+
+  body.size-S .screen{padding:0 10px 14px}
+
+  /* Balance / summary */
+  body.size-S .balance-panel{padding:10px 10px 11px}
+  body.size-S .balance-main{border-radius:18px;padding:10px 12px 11px}
+  body.size-S .balance-main span,
+  body.size-S .available-large span,
+  body.size-S .settings-balance>span{font-size:10px;letter-spacing:1px}
+  body.size-S .balance-main strong{font-size:23px;line-height:1;margin-top:3px}
+  body.size-S .balance-mini-grid{gap:7px;margin-top:8px}
+  body.size-S .summary-card{border-radius:17px;padding:9px 10px;min-height:68px}
+  body.size-S .summary-card span{font-size:9px;letter-spacing:.4px}
+  body.size-S .summary-card span b{font-size:16px}
+  body.size-S .summary-card strong{font-size:18px;margin-top:5px}
+  body.size-S .fund-actions{gap:7px;margin-top:8px}
+  body.size-S .fund-btn{height:45px;border-radius:23px;font-size:12px;letter-spacing:.4px}
+  body.size-S .fund-btn span{font-size:17px}
+
+  /* Watchlist */
+  body.size-S .watch-toolbar{gap:5px;padding-top:7px}
+  body.size-S .watch-tabs{gap:9px}
+  body.size-S .watch-tabs button{font-size:11px;padding:5px 0 5px}
+  body.size-S .icon-control,
+  body.size-S .add-script-control,
+  body.size-S .tv-control{height:38px;border-radius:19px}
+  body.size-S .icon-control{width:42px;font-size:19px}
+  body.size-S .add-script-control{font-size:11px;padding:0 9px}
+  body.size-S .tv-control{font-size:10px;padding:0 9px}
+  body.size-S .watch-head{
+    grid-template-columns:minmax(0,1fr) 52px 52px;
+    padding:9px 3px 7px;font-size:8px
+  }
+  body.size-S .watch-row{
+    grid-template-columns:minmax(0,1fr) 52px 52px;
+    padding:9px 2px;min-height:73px
+  }
+  body.size-S .watch-row .instrument b{font-size:13px}
+  body.size-S .watch-row .instrument small,
+  body.size-S .contract-meta{font-size:9px}
+  body.size-S .fno-badge{font-size:7px}
+  body.size-S .instrument-market .ltp{font-size:13px}
+  body.size-S .instrument-market .change{font-size:9px}
+  body.size-S .quote-cell strong{min-width:44px;padding:5px 2px;font-size:11px}
+  body.size-S .quote-cell small{font-size:8px}
+  body.size-S .remove-script{width:18px;height:18px;flex-basis:18px;font-size:10px}
+
+  /* Bottom navigation */
+  body.size-S .bottom-nav{height:68px;padding:4px 2px max(4px,env(safe-area-inset-bottom))}
+  body.size-S .bottom-nav .nav-icon{width:23px;height:23px;flex-basis:23px;font-size:19px!important}
+  body.size-S .bottom-nav button strong{font-size:8px;letter-spacing:.2px}
+
+  /* Other screens */
+  body.size-S .screen-header{height:56px}
+  body.size-S .screen-header span{font-size:12px}
+  body.size-S .screen-counter{font-size:13px}
+  body.size-S .screen-icons{gap:4px}
+  body.size-S .screen-icons button{font-size:19px}
+  body.size-S .refresh-button{font-size:21px}
+  body.size-S .period-tabs,
+  body.size-S .order-tabs{margin:7px 0 12px}
+  body.size-S .period-tabs button,
+  body.size-S .order-tabs button{height:38px;font-size:10px}
+  body.size-S .metrics-grid{gap:10px 8px;padding:2px 2px 15px}
+  body.size-S .metric span{font-size:8px;letter-spacing:.5px}
+  body.size-S .metric strong,
+  body.size-S .metric.compact strong{font-size:18px;margin-top:3px}
+  body.size-S .subtabs{gap:5px;padding:9px 0}
+  body.size-S .subtabs button,
+  body.size-S .ledger-tabs button{padding:6px 10px;font-size:9px}
+  body.size-S .position-summary{gap:5px;padding:8px 0 10px}
+  body.size-S .position-summary div{border-radius:14px;padding:9px 7px}
+  body.size-S .position-summary span{font-size:8px}
+  body.size-S .position-summary strong{font-size:17px;margin-top:4px}
+  body.size-S .positions-empty-card{border-radius:18px;min-height:180px}
+  body.size-S .empty-position strong{font-size:16px}
+  body.size-S .empty-position span{font-size:11px}
+
+  /* Settings */
+  body.size-S .section-label{font-size:10px;letter-spacing:.8px;padding:8px 3px 4px}
+  body.size-S .settings-menu button{grid-template-columns:42px 1fr 12px;gap:6px;padding:8px 3px}
+  body.size-S .setting-icon{width:36px;height:36px;font-size:16px}
+  body.size-S .settings-menu b,
+  body.size-S .preferences b{font-size:13px}
+  body.size-S .settings-menu small,
+  body.size-S .preferences small{font-size:9px;line-height:1.2}
+  body.size-S .pref-row{grid-template-columns:39px minmax(0,1fr) auto;gap:6px;padding:8px 0}
+  body.size-S .segmented{height:36px;border-radius:18px}
+  body.size-S .segmented button{padding:0 6px;font-size:9px}
+  body.size-S .switch{width:60px;height:34px}
+  body.size-S .switch i{width:27px;height:27px}
+  body.size-S .switch.on i{left:29px}
+  body.size-S .logout-big{height:50px;border-radius:17px;font-size:17px;margin:14px 0 8px}
+
+  /* Forms / detail */
+  body.size-S .inner-title{height:54px;gap:7px;font-size:13px}
+  body.size-S .back-button{font-size:29px;width:27px}
+  body.size-S .field-label{font-size:10px;margin:12px 0}
+  body.size-S .input-box{height:44px;border-radius:11px;padding:0 11px;font-size:13px}
+  body.size-S .full-primary{height:47px;border-radius:11px;font-size:13px}
+  body.size-S .request-note{font-size:9px;padding:8px}
+  body.size-S .detail-price{font-size:24px;margin-top:22px}
+  body.size-S .detail-change{font-size:12px}
+  body.size-S .detail-sell,
+  body.size-S .place-order{height:47px;font-size:14px}
+  body.size-S .search-input-wrap{height:44px;border-radius:22px;margin:9px 10px 0;font-size:20px}
+  body.size-S .search-input-wrap input{font-size:13px}
+  body.size-S .script-tabs button{height:43px;font-size:10px}
+  body.size-S .script-tabs small{font-size:8px}
+  body.size-S .script-row{padding:11px 12px}
+  body.size-S .script-row b{font-size:13px}
+  body.size-S .script-row small{font-size:9px;margin-top:3px}
+  body.size-S .script-action{width:38px;height:38px;font-size:19px}
+
+  /* Number Size: S must be clearly smaller */
+  body.size-S .balance-main strong{font-size:29px}
+  body.size-M .balance-main strong{font-size:35px}
+  body.size-L .balance-main strong{font-size:42px}
+  body.size-XL .balance-main strong{font-size:48px}
+
+  body.size-S .summary-card strong{font-size:24px}
+  body.size-M .summary-card strong{font-size:29px}
+  body.size-L .summary-card strong{font-size:35px}
+  body.size-XL .summary-card strong{font-size:39px}
+
+  body.size-S .instrument-market .ltp,
+  body.size-S .quote-cell strong{font-size:16px}
+  body.size-M .instrument-market .ltp,
+  body.size-M .quote-cell strong{font-size:19px}
+  body.size-L .instrument-market .ltp,
+  body.size-L .quote-cell strong{font-size:22px}
+  body.size-XL .instrument-market .ltp,
+  body.size-XL .quote-cell strong{font-size:25px}
+
+  body.size-S .metric strong,
+  body.size-S .position-summary strong{font-size:23px}
+  body.size-M .metric strong,
+  body.size-M .position-summary strong{font-size:28px}
+  body.size-L .metric strong,
+  body.size-L .position-summary strong{font-size:33px}
+  body.size-XL .metric strong,
+  body.size-XL .position-summary strong{font-size:37px}
+
+  body.size-S .settings-balance>strong,
+  body.size-S .available-large strong{font-size:32px}
+  body.size-M .settings-balance>strong,
+  body.size-M .available-large strong{font-size:39px}
+  body.size-L .settings-balance>strong,
+  body.size-L .available-large strong{font-size:46px}
+  body.size-XL .settings-balance>strong,
+  body.size-XL .available-large strong{font-size:50px}
+
+  body.size-S .detail-price{font-size:32px}
+  body.size-M .detail-price{font-size:39px}
+  body.size-L .detail-price{font-size:46px}
+  body.size-XL .detail-price{font-size:50px}
+}
