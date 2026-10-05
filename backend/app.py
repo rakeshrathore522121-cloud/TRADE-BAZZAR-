@@ -2,7 +2,6 @@ import os
 import io
 import csv
 import base64
-import sqlite3
 from functools import wraps
 from datetime import datetime
 
@@ -11,7 +10,7 @@ from flask import Flask, request, jsonify, session, send_from_directory, make_re
 from flask_cors import CORS
 from werkzeug.security import check_password_hash
 
-from database import get_connection, init_database
+from database import get_connection, init_database, IntegrityError
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
@@ -316,7 +315,7 @@ def add_watchlist():
             (u["id"], list_no, symbol),
         )
         conn.commit()
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         pass
     conn.close()
     return jsonify({"success": True})
@@ -609,7 +608,7 @@ def admin_create_user():
         )
         conn.commit()
         new_id = cur.lastrowid
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         conn.close()
         return jsonify({"success": False, "message": "User ID already exists."}), 400
     conn.close()
@@ -822,7 +821,7 @@ def orders_csv():
     writer = csv.writer(out)
     writer.writerow(["ID","User ID","Symbol","Side","Quantity","Price","Status","P&L","Created At"])
     for r in rows:
-        writer.writerow(list(r))
+        writer.writerow(list(r.values()))
     resp = make_response(out.getvalue())
     resp.headers["Content-Type"] = "text/csv"
     resp.headers["Content-Disposition"] = "attachment; filename=trade_bazzar_orders.csv"
