@@ -8,6 +8,63 @@
 <link rel="stylesheet" href="/style.css">
 </head>
 <body class="login-page">
+<!-- TRADE BAZZAR MOBILE LANDING -->
+<div id="tb-mobile-landing">
+  <header class="tb-header">
+    <div class="tb-brand">
+      <div class="tb-logo-mark">TB</div>
+      <div>
+        <div class="tb-brand-name">TRADE BAZZAR</div>
+        <div class="tb-brand-tag">SMART • SIMPLE • SECURE</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="tb-hero">
+      <span class="tb-eyebrow">SMART • SIMPLE • SECURE</span>
+      <h1>Invest Smarter.<br><span>Trade Better.</span></h1>
+      <p>Access your trading account and manage your market journey from one simple platform.</p>
+      <button type="button" class="tb-get-started" id="tbGetStarted">GET STARTED <span>→</span></button>
+    </section>
+
+    <section class="tb-stats" aria-label="Platform highlights">
+      <div><strong>0</strong><small>BROKERAGE</small></div>
+      <div><strong>3×</strong><small>MARGIN</small></div>
+      <div><strong>10</strong><small>MIN PAYOUT</small></div>
+      <div><strong>10L+</strong><small>USERS</small></div>
+    </section>
+
+    <section class="tb-market">
+      <div class="tb-section-title">
+        <span>LIVE MARKET</span><span class="tb-live-dot">● LIVE</span>
+      </div>
+      <div class="tb-market-grid">
+        <div><b>NIFTY 50</b><span>Market Index</span></div>
+        <div><b>BANK NIFTY</b><span>Market Index</span></div>
+        <div><b>SENSEX</b><span>Market Index</span></div>
+      </div>
+    </section>
+
+    <section class="tb-features">
+      <div class="tb-section-heading">PLATFORM HIGHLIGHTS</div>
+      <div class="tb-feature-grid">
+        <article><span>◉</span><b>Live Market</b><small>Stay updated with market moves.</small></article>
+        <article><span>▦</span><b>Smart Trading</b><small>Simple tools for quick decisions.</small></article>
+        <article><span>☆</span><b>Watchlist</b><small>Keep your preferred stocks close.</small></article>
+        <article><span>↗</span><b>Fast Orders</b><small>Place orders from your dashboard.</small></article>
+      </div>
+    </section>
+
+    <section class="tb-news">
+      <div class="tb-section-heading">MARKET UPDATES</div>
+      <div class="tb-news-card">Stay informed with market updates and platform information.</div>
+      <div class="tb-news-card">Your trading dashboard is ready whenever you are.</div>
+    </section>
+
+    <div id="tb-login-anchor" aria-hidden="true"></div>
+    <!-- TB_LOGIN_ANCHOR -->
+
 <main class="login-shell">
   <section class="login-card">
     <div class="login-logo brand-logo">
@@ -36,5 +93,37 @@
   </section>
 </main>
 <script src="/script.js"></script>
+
+  </main>
+  <footer class="tb-footer">
+    <strong>TRADE BAZZAR</strong>
+    <span>Smart • Simple • Secure</span>
+    <small>© 2024 TRADE BAZZAR</small>
+  </footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const btn = document.getElementById('tbGetStarted');
+  const anchor = document.getElementById('tb-login-anchor');
+  if (btn && anchor) {
+    btn.addEventListener('click', function () {
+      const candidates = [
+        document.querySelector('.login-container'),
+        document.querySelector('.login-card'),
+        document.querySelector('.auth-container'),
+        document.querySelector('form')
+      ];
+      const target = candidates.find(Boolean) || anchor;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(function(){
+        const input = document.querySelector('input[type="text"], input[name="user_id"], input[name="username"], input[type="email"]');
+        if (input) input.focus({preventScroll:true});
+      }, 650);
+    });
+  }
+});
+</script>
+
 </body>
 </html>
