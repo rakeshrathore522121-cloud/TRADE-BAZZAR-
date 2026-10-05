@@ -480,6 +480,19 @@ $$(".period-tabs button").forEach(b=>b.onclick=()=>{currentPeriod=b.dataset.peri
 $$(".subtabs button").forEach(b=>b.onclick=()=>{currentTradeSubtab=b.dataset.subtab;$$(".subtabs button").forEach(x=>x.classList.toggle("active",x===b));renderTrade()});
 $$(".order-tabs button").forEach(b=>b.onclick=()=>{currentOrderFilter=b.dataset.orderFilter;$$(".order-tabs button").forEach(x=>x.classList.toggle("active",x===b));renderOrders()});
 $("#copyUpi").onclick=async()=>{try{await navigator.clipboard.writeText($("#depositUpi").textContent);toast("UPI ID copied")}catch{toast("Copy not available")}};
+$("#depPayNow").onclick=()=>{
+  const amount=Number($("#depAmount").value);
+  const upiId=$("#depositUpi").textContent.trim();
+  if(!amount||amount<=0)return toast("Enter a valid deposit amount");
+  if(!upiId||upiId==="Not configured")return toast("UPI ID is not configured by admin");
+  const params=new URLSearchParams({
+    pa:upiId,
+    pn:"TRADE BAZZAR",
+    am:amount.toFixed(2),
+    cu:"INR"
+  });
+  window.location.href="upi://pay?"+params.toString();
+};
 $("#depSubmit").onclick=submitDeposit;$("#wdSubmit").onclick=submitWithdraw;$("#changePw").onclick=async()=>{
   const old=$("#oldPw").value,n1=$("#newPw").value,n2=$("#newPw2").value;
   if(n1!==n2)return toast("Passwords do not match");
