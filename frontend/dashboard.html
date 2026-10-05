@@ -235,9 +235,19 @@
       <div class="or">OR</div>
       <div class="scan-pay">SCAN &amp; PAY</div>
       <div class="qr-box"><img id="depositQr" alt="QR CODE"><span id="qrPlaceholder">QR CODE</span></div>
-      <div class="upi-row"><div><span>UPI ID</span><strong id="depositUpi">Not configured</strong></div><button id="copyUpi">COPY</button></div>
-      <button class="full-primary" id="depPayNow">PAY NOW</button>
-      <div class="request-note">PAY NOW opens your installed UPI apps (PhonePe, Google Pay, Paytm or another supported UPI app) with the amount and admin-configured UPI ID filled in.</div>
+      <div class="upi-row"><div><span>UPI ID</span><strong id="depositUpi">tradebazzar@upi</strong></div><button id="copyUpi">COPY</button></div>
+      <button class="full-primary" id="payNowBtn" type="button">PAY NOW</button>
+      <div id="upiPaySheet" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:9999;align-items:flex-end;justify-content:center;">
+        <div style="width:100%;max-width:520px;background:#fff;border-radius:22px 22px 0 0;padding:20px;box-sizing:border-box;box-shadow:0 -8px 30px rgba(0,0,0,.2);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><strong style="font-size:20px;">PAY WITH UPI</strong><button id="closeUpiPay" type="button" style="border:0;background:#eee;border-radius:50%;width:36px;height:36px;font-size:22px;">×</button></div>
+          <div id="upiPayAmount" style="font-size:26px;font-weight:800;margin-bottom:16px;">₹0.00</div>
+          <button class="full-primary" id="phonePePay" type="button">📱 PhonePe</button>
+          <button class="full-primary" id="gpayPay" type="button" style="margin-top:10px;">🟢 Google Pay</button>
+          <button class="full-primary" id="paytmPay" type="button" style="margin-top:10px;">🔵 Paytm</button>
+          <button class="full-primary" id="qrPay" type="button" style="margin-top:10px;">▣ Scan QR / Other UPI App</button>
+          <div style="font-size:13px;line-height:1.45;color:#666;margin-top:12px;">On iPhone, UPI app-specific buttons are used instead of the generic <b>upi://pay</b> link, because iOS can route the generic link to an arbitrary UPI handler such as WhatsApp Pay. The QR option works with supported UPI apps.</div>
+        </div>
+      </div>
       <label class="field-label">PAYMENT REFERENCE<div class="input-box"><input id="depUtr" placeholder="Enter UTR / transaction reference"></div></label>
       <button class="full-primary" id="depSubmit">PAYMENT DONE</button>
       <div class="request-note">Your deposit is Safe ADD Fund and your balance is updated.</div>

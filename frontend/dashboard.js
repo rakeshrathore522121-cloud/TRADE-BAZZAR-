@@ -480,18 +480,36 @@ $$(".period-tabs button").forEach(b=>b.onclick=()=>{currentPeriod=b.dataset.peri
 $$(".subtabs button").forEach(b=>b.onclick=()=>{currentTradeSubtab=b.dataset.subtab;$$(".subtabs button").forEach(x=>x.classList.toggle("active",x===b));renderTrade()});
 $$(".order-tabs button").forEach(b=>b.onclick=()=>{currentOrderFilter=b.dataset.orderFilter;$$(".order-tabs button").forEach(x=>x.classList.toggle("active",x===b));renderOrders()});
 $("#copyUpi").onclick=async()=>{try{await navigator.clipboard.writeText($("#depositUpi").textContent);toast("UPI ID copied")}catch{toast("Copy not available")}};
-$("#depPayNow").onclick=()=>{
+function upiRequestUrl(scheme, amount){
+  const pa=String($("#depositUpi").textContent||"").trim();
+  const am=Number(amount).toFixed(2);
+  const q=`pa=${encodeURIComponent(pa)}&pn=${encodeURIComponent("TRADE BAZZAR")}&am=${encodeURIComponent(am)}&cu=INR`;
+  return `${scheme}${q}`;
+}
+function openUpiApp(scheme){
   const amount=Number($("#depAmount").value);
-  const upiId=$("#depositUpi").textContent.trim();
-  if(!amount||amount<=0)return toast("Enter a valid deposit amount");
-  if(!upiId||upiId==="Not configured")return toast("UPI ID is not configured by admin");
-  const params=new URLSearchParams({
-    pa:upiId,
-    pn:"TRADE BAZZAR",
-    am:amount.toFixed(2),
-    cu:"INR"
-  });
-  window.location.href="upi://pay?"+params.toString();
+  const pa=String($("#depositUpi").textContent||"").trim();
+  if(!amount||amount<=0)return toast("Enter a valid deposit amount first");
+  if(!pa||pa==="Not configured")return toast("UPI ID is not configured");
+  const url=upiRequestUrl(scheme,amount);
+  window.location.href=url;
+}
+$("#payNowBtn").onclick=()=>{
+  const amount=Number($("#depAmount").value);
+  if(!amount||amount<=0)return toast("Enter a valid deposit amount first");
+  $("#upiPayAmount").textContent=money(amount);
+  $("#upiPaySheet").style.display="flex";
+};
+$("#closeUpiPay").onclick=()=>$("#upiPaySheet").style.display="none";
+$("#upiPaySheet").addEventListener("click",e=>{if(e.target.id==="upiPaySheet")e.currentTarget.style.display="none"});
+$("#phonePePay").onclick=()=>openUpiApp("phonepe://pay?");
+$("#gpayPay").onclick=()=>openUpiApp("tez://upi/pay?");
+$("#paytmPay").onclick=()=>openUpiApp("paytmmp://pay?");
+$("#qrPay").onclick=()=>{
+  $("#upiPaySheet").style.display="none";
+  const img=$("#depositQr");
+  if(img&&img.src&&img.style.display!=="none"){img.scrollIntoView({behavior:"smooth",block:"center"});toast("Scan the QR with PhonePe, Google Pay, Paytm or another UPI app");}
+  else{navigator.clipboard?.writeText($("#depositUpi").textContent||"");toast("UPI ID copied — open your UPI app and pay the amount");}
 };
 $("#depSubmit").onclick=submitDeposit;$("#wdSubmit").onclick=submitWithdraw;$("#changePw").onclick=async()=>{
   const old=$("#oldPw").value,n1=$("#newPw").value,n2=$("#newPw2").value;
