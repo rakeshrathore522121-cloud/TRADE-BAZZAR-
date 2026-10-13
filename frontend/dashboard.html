@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#fbfcfd">
 <title>TRADE BAZZAR</title>
-<link rel="stylesheet" href="/dashboard.css">
+<link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
 <div class="app-shell">
@@ -75,6 +75,117 @@
       <div id="watchlist" class="watch-list"></div>
       <div id="watchEmpty" class="empty-watch">No scripts. Tap <strong>+ Add</strong> to add instruments.</div>
     </section>
+
+    <!-- F&O: isolated feature; existing screens remain unchanged -->
+    <section id="view-fo" class="screen fo-screen">
+      <div class="fo-heading"><div><span class="fo-eyebrow">DERIVATIVES</span><h2>F&amp;O</h2></div></div>
+      <div class="fo-index-tabs"><button class="active" data-fo-index="NIFTY 50">NIFTY 50</button><button data-fo-index="BANK NIFTY">BANK NIFTY</button></div>
+      <div class="fo-price-card"><div><span id="foSelectedName">NIFTY 50</span><small>Index overview</small></div><div class="fo-price-right"><strong id="foIndexPrice">—</strong><small id="foIndexChange"></small></div></div>
+      <div class="fo-section-title"><strong>CHART</strong><span id="foChartStatus">Loading market candles…</span></div>
+      <div class="fo-chart-controls">
+        <button class="active" data-interval="1m">1m</button>
+        <button data-interval="5m">5m</button>
+        <button data-interval="15m">15m</button>
+        <button data-interval="1h">1H</button>
+        <button data-interval="1d">1D</button>
+      </div>
+      <div class="fo-chart" aria-label="Candlestick chart">
+        <div class="fo-chart-grid"></div>
+        <canvas id="foCandlestickChart" role="img" aria-label="Candlestick price chart"></canvas>
+        <div class="fo-chart-message" id="foChartMessage">Loading chart data…</div>
+        <div class="fo-chart-axis" id="foChartAxis"><span>—</span><span>—</span><span>—</span><span>—</span></div>
+      </div>
+      <div class="fo-chain-head"><div><strong>OPTION CHAIN</strong><small id="foChainName">NIFTY 50</small></div><label>EXPIRY<select id="foExpiry" aria-label="Option expiry"></select></label></div>
+      <div class="fo-chain-legend"><span>CALL (CE)</span><b>STRIKE PRICE</b><span>PUT (PE)</span></div>
+      <div class="fo-chain-table"><div class="fo-chain-row fo-chain-label"><span>LTP · OI</span><b>STRIKE</b><span>OI · LTP</span></div></div>
+    </section>
+
+    ```
+<!-- FOREX PAPER TRADING -->
+<section id="view-forex" class="screen forex-screen">
+  <div class="screen-header">
+    <div>
+      <div class="brand-mini">TB</div>
+    </div>
+    <div>
+      <h2>FOREX</h2>
+      <span class="forex-demo-badge">● FOREX MARKET</span>
+    </div>
+    <button class="refresh-button" id="refreshForex" type="button">↻</button>
+  </div>
+
+  <div class="forex-balance-card">
+    <span>Live BALANCE</span>
+    <strong id="forexBalance">$00.00</strong>
+    <div class="forex-balance-stats">
+      <div>
+        <small>OPEN P&amp;L</small>
+        <strong id="forexOpenPnl">$0.00</strong>
+      </div>
+      <div>
+        <small>OPEN POSITIONS</small>
+        <strong id="forexPositionCount">0</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="forex-section-heading">
+    <h3>Currency Pairs</h3>
+    <span>Live PRICES</span>
+  </div>
+
+  <div class="forex-search">
+    <input id="forexSearch" type="search" placeholder="Search currency pair..." autocomplete="off">
+  </div>
+
+  <div id="forexPairs" class="forex-pairs-list">
+    <div class="forex-loading">Loading currency prices...</div>
+  </div>
+
+  <div id="forexTradePanel" class="forex-trade-panel" hidden>
+    <div class="forex-selected-pair">
+      <div>
+        <strong id="forexSelectedSymbol">EUR/USD</strong>
+        <small>Simulated execution price</small>
+      </div>
+      <strong id="forexSelectedPrice">1.10000</strong>
+    </div>
+
+    <label for="forexQuantity">Trade Quantity (units)</label>
+    <input id="forexQuantity" type="number" min="1" step="1" value="1000">
+
+    <div class="forex-trade-actions">
+      <button id="forexBuy" class="forex-buy-button" type="button">BUY</button>
+      <button id="forexSell" class="forex-sell-button" type="button">SELL</button>
+    </div>
+
+    <p class="forex-TRADE-note">
+      Forex trading available.
+    </p>
+  </div>
+
+  <div class="forex-section-heading">
+    <h3>Open Positions</h3>
+    <span id="forexPositionsLabel">0 OPEN</span>
+  </div>
+
+  <div id="forexPositions" class="forex-positions-list">
+    <div class="forex-empty">No open Forex positions.</div>
+  </div>
+
+  <div class="forex-section-heading">
+    <h3>Trade History</h3>
+  </div>
+
+  <div id="forexHistory" class="forex-history-list">
+    <div class="forex-empty">No completed Forex trades.</div>
+  </div>
+
+  <p class="forex-disclaimer">
+    Forex market prices and trading information.
+  </p>
+</section>
+```
 
     <!-- TRADE / TRANSACTIONS -->
     <section id="view-trade" class="screen">
@@ -377,14 +488,19 @@ For any additional information, clarification, account-related assistance, or de
   </div>
 
   <div id="toast" role="status"></div>
-  <nav class="bottom-nav">
-    <button data-page="watchlist" class="active"><span class="nav-icon">◉</span><strong>WATCHLIST</strong></button>
-    <button data-page="trade"><span class="nav-icon">⌁</span><strong>TRADE</strong></button>
-    <button data-page="positions"><span class="nav-icon">▥</span><strong>POSITIONS</strong></button>
-    <button data-page="orders"><span class="nav-icon">▤</span><strong>ORDERS</strong></button>
-    <button data-page="settings"><span class="nav-icon">⚙</span><strong>SETTINGS</strong></button>
-  </nav>
+
+<nav class="bottom-nav">
+  <button data-page="watchlist" class="active"><span class="nav-icon">◉</span><strong>WATCHLIST</strong></button>
+
+  <button data-page="forex"><span class="nav-icon">💱</span><strong>FOREX</strong></button>
+
+  <button data-page="fo"><span class="nav-icon">⌁</span><strong>F&amp;O</strong></button>
+  <button data-page="trade"><span class="nav-icon">⌁</span><strong>TRADE</strong></button>
+  <button data-page="positions"><span class="nav-icon">▥</span><strong>POSITIONS</strong></button>
+  <button data-page="orders"><span class="nav-icon">▤</span><strong>ORDERS</strong></button>
+  <button data-page="settings"><span class="nav-icon">⚙</span><strong>SETTINGS</strong></button>
+</nav>
 </div>
-<script src="/dashboard.js"></script>
+<script src="dashboard.js" defer></script>
 </body>
 </html>

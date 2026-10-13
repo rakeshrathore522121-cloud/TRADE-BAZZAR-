@@ -78,22 +78,61 @@ def public_user(u):
         "dob": u["dob"],
         "email": u["email"],
         "balance": float(u["balance"]),
+        "forex_balance": float(u["forex_balance"] or 0),
         "active": bool(u["active"]),
         "blocked": bool(u["blocked"]),
         "created_at": u["created_at"],
     }
 
 def nse_option_chain(index_symbol="NIFTY"):
-    url="https://www.nseindia.com/api/option-chain-indices"
-    session=requests.Session()
-    headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36","Accept":"application/json,text/plain,*/*","Accept-Language":"en-US,en;q=0.9,hi;q=0.8","Accept-Encoding":"gzip, deflate, br","Connection":"keep-alive","Referer":f"https://www.nseindia.com/option-chain?symbol={index_symbol}","DNT":"1"}
+    """Fetch NSE index option-chain data using the current contract-info + v3 routes.
+
+    NSE may still deny automated requests (403/404); in that case return None so
+    the API can show an unavailable state rather than fabricated market prices.
+    """
+    symbol = str(index_symbol).upper().strip()
+    if symbol not in ("NIFTY", "BANKNIFTY"):
+        return None
+
+    session = requests.Session()
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9,hi;q=0.8",
+        "Referer": f"https://www.nseindia.com/option-chain?symbol={symbol}",
+        "Origin": "https://www.nseindia.com",
+        "Connection": "keep-alive",
+    }
     try:
-        session.get("https://www.nseindia.com/get-quotes/derivatives",params={"symbol":index_symbol},headers=headers,timeout=8)
-        session.get("https://www.nseindia.com/",headers=headers,timeout=8)
-        r=session.get(url,params={"symbol":index_symbol},headers=headers,timeout=10)
-        r.raise_for_status()
-        return r.json()
-    except Exception:
+        # Establish cookies from the NSE website before calling its JSON endpoints.
+        session.get("https://www.nseindia.com/", headers=headers, timeout=10)
+        session.get(
+            "https://www.nseindia.com/option-chain",
+            params={"symbol": symbol}, headers=headers, timeout=10,
+        )
+        info = session.get(
+            "https://www.nseindia.com/api/option-chain-contract-info",
+            params={"symbol": symbol}, headers=headers, timeout=12,
+        )
+        info.raise_for_status()
+        info_data = info.json()
+        expiry_dates = info_data.get("expiryDates", []) or []
+        if not expiry_dates:
+            return None
+
+        expiry = expiry_dates[0]
+        chain = session.get(
+            "https://www.nseindia.com/api/option-chain-v3",
+            params={"type": "Indices", "symbol": symbol, "expiry": expiry},
+            headers=headers, timeout=15,
+        )
+        chain.raise_for_status()
+        chain_data = chain.json()
+        records = chain_data.get("records", {}) or {}
+        # Keep the response shape expected by existing app routes.
+        records.setdefault("expiryDates", expiry_dates)
+        return {"records": records}
+    except (requests.RequestException, ValueError, TypeError, KeyError):
         return None
 
 def index_option_quote(symbol):
@@ -217,41 +256,45 @@ def me():
 @app.get("/api/fno")
 @login_required
 def fno():
-    index_symbol=request.args.get("symbol","NIFTY").upper()
+    index_symbol=request.args.get("symbol","NIFTY").upper().strip()
     if index_symbol not in ("NIFTY","BANKNIFTY"):
-        return jsonify({"success":False,"message":"Only NIFTY and BANKNIFTY options are supported."}),400
+        return jsonify({"success":False,"message":"Unsupported option index."}),400
     data=nse_option_chain(index_symbol)
+    # Never manufacture sample strikes or prices when the market feed is absent.
     if not data:
-        center = 22500 if index_symbol == "NIFTY" else 52000
-        step = 50 if index_symbol == "NIFTY" else 100
-        contracts=[]
-        for i in range(-30,31):
-            strike=center + i*step
-            if strike <= 0: continue
-            for side in ("CE","PE"):
-                contracts.append({"symbol":f"{index_symbol}{strike}{side}","identifier":"","strike":strike,"type":side,"expiry":"NSE F&O","ltp":None,"change":None,"change_percent":None,"bid":None,"ask":None,"bid_qty":None,"ask_qty":None})
-        return jsonify({"success":True,"underlying":index_symbol,"expiry_dates":[],"contracts":contracts,"live":False})
-    records=data.get("records",{})
-    expiries=records.get("expiryDates",[])
+        return jsonify({"success":True,"underlying":index_symbol,"expiry_dates":[],"contracts":[],"live":False})
+    records=data.get("records",{}) or {}
+    expiries=records.get("expiryDates",[]) or []
+    requested_expiry=request.args.get("expiry","").strip()
+    target_expiry=requested_expiry if requested_expiry in expiries else (expiries[0] if expiries else None)
     contracts=[]
-    target_expiry=expiries[0] if expiries else None
-    for row in records.get("data",[]):
+    for row in records.get("data",[]) or []:
         strike=row.get("strikePrice")
         expiry=row.get("expiryDate")
-        if strike is None or not expiry or (target_expiry and expiry!=target_expiry): continue
+        if strike is None or not expiry or (target_expiry and expiry!=target_expiry):
+            continue
         for side in ("CE","PE"):
             leg=row.get(side) or {}
-            if not leg or leg.get("lastPrice") is None: continue
+            if not leg:
+                continue
+            def num(value):
+                try:
+                    return float(value) if value is not None else None
+                except (TypeError,ValueError):
+                    return None
             contracts.append({
                 "symbol":f"{index_symbol}{int(float(strike))}{side}",
-                "identifier":leg.get("identifier",""), "strike":strike, "type":side, "expiry":expiry,
-                "ltp":float(leg.get("lastPrice") or 0), "change":float(leg.get("change") or 0),
-                "change_percent":float(leg.get("pChange") or 0), "bid":float(leg.get("bidprice") or 0),
-                "ask":float(leg.get("askPrice") or 0), "bid_qty":int(leg.get("bidQty") or 0),
-                "ask_qty":int(leg.get("askQty") or 0), "low":float(leg.get("lowPrice") or 0),
-                "high":float(leg.get("highPrice") or 0)
+                "identifier":leg.get("identifier",""), "strike":float(strike),
+                "type":side, "expiry":expiry, "ltp":num(leg.get("lastPrice")),
+                "change":num(leg.get("change")), "change_percent":num(leg.get("pChange")),
+                "bid":num(leg.get("bidprice")), "ask":num(leg.get("askPrice")),
+                "bid_qty":num(leg.get("bidQty")), "ask_qty":num(leg.get("askQty")),
+                "oi":num(leg.get("openInterest")), "change_oi":num(leg.get("changeinOpenInterest")),
+                "volume":num(leg.get("totalTradedVolume")),
+                "low":num(leg.get("lowPrice")), "high":num(leg.get("highPrice"))
             })
-    return jsonify({"success":True,"underlying":index_symbol,"expiry_dates":expiries,"contracts":contracts})
+    return jsonify({"success":True,"underlying":index_symbol,"expiry_dates":expiries,
+                    "selected_expiry":target_expiry,"contracts":contracts,"live":True})
 
 @app.get("/api/market")
 def market():
@@ -262,6 +305,71 @@ def market():
         if q:
             result.append(q)
     return jsonify({"success": True, "data": result})
+
+
+@app.get("/api/chart")
+@login_required
+def chart_data():
+    """Return genuine Yahoo Finance OHLC candles for the selected index/timeframe."""
+    symbol = request.args.get("symbol", "NIFTY 50").strip().upper()
+    interval = request.args.get("interval", "1m").strip().lower()
+    interval_map = {
+        "1m": ("1m", "5d"),
+        "5m": ("5m", "1mo"),
+        "15m": ("15m", "1mo"),
+        "1h": ("60m", "3mo"),
+        "1d": ("1d", "1y"),
+    }
+    if interval not in interval_map:
+        return jsonify({"success": False, "message": "Unsupported chart interval."}), 400
+    if symbol not in ("NIFTY 50", "BANK NIFTY"):
+        return jsonify({"success": False, "message": "Unsupported chart symbol."}), 400
+    yahoo_symbol = MARKET_MAP.get(symbol)
+    if not yahoo_symbol:
+        return jsonify({"success": False, "message": "Chart symbol is not configured."}), 400
+    yahoo_interval, period = interval_map[interval]
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}"
+    try:
+        response = requests.get(
+            url,
+            params={"range": period, "interval": yahoo_interval, "includePrePost": "false"},
+            headers={"User-Agent": "Mozilla/5.0"},
+            timeout=12,
+        )
+        response.raise_for_status()
+        payload = response.json().get("chart", {})
+        if payload.get("error"):
+            raise ValueError("Market data provider returned an error")
+        result = (payload.get("result") or [None])[0]
+        if not result:
+            return jsonify({"success": False, "message": "No chart data returned."}), 503
+        timestamps = result.get("timestamp") or []
+        quote = (result.get("indicators", {}).get("quote") or [{}])[0]
+        opens, highs = quote.get("open") or [], quote.get("high") or []
+        lows, closes = quote.get("low") or [], quote.get("close") or []
+        candles = []
+        for i, timestamp in enumerate(timestamps):
+            try:
+                o, h, l, c = opens[i], highs[i], lows[i], closes[i]
+                if None in (o, h, l, c):
+                    continue
+                candles.append({
+                    "time": int(timestamp),
+                    "open": float(o), "high": float(h),
+                    "low": float(l), "close": float(c),
+                })
+            except (IndexError, TypeError, ValueError):
+                continue
+        if not candles:
+            return jsonify({"success": False, "message": "No complete candles available."}), 503
+        meta = result.get("meta", {})
+        return jsonify({
+            "success": True, "symbol": symbol, "interval": interval,
+            "source": "Yahoo Finance", "currency": meta.get("currency", "INR"),
+            "candles": candles,
+        })
+    except Exception:
+        return jsonify({"success": False, "message": "Historical candle data is temporarily unavailable."}), 503
 
 @app.get("/api/quote/<path:symbol>")
 @login_required
@@ -916,6 +1024,101 @@ def admin_adjust_balance(user_db_id):
                  (user_db_id,"ADMIN_ADJUSTMENT",amount,note,"ADMIN"))
     conn.commit(); conn.close()
     return jsonify({"success":True,"message":"Balance updated."})
+# ---------------- FOREX BALANCE ----------------
+
+@app.get("/api/forex/balance")
+@login_required
+def get_forex_balance():
+    u = current_user()
+
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT forex_balance FROM users WHERE id=?",
+        (u["id"],)
+    ).fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({
+            "success": False,
+            "message": "User not found."
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "forex_balance": float(row["forex_balance"] or 0)
+    })
+
+
+@app.post("/api/admin/users/<int:user_db_id>/forex-balance")
+@admin_required
+def admin_adjust_forex_balance(user_db_id):
+    data = request.get_json(silent=True) or {}
+
+    try:
+        amount = float(data.get("amount", 0))
+    except (TypeError, ValueError):
+        return jsonify({
+            "success": False,
+            "message": "Enter a valid amount."
+        }), 400
+
+    import math
+
+    if not math.isfinite(amount):
+        return jsonify({
+            "success": False,
+            "message": "Enter a valid amount."
+        }), 400
+
+    if amount == 0:
+        return jsonify({
+            "success": False,
+            "message": "Amount cannot be zero."
+        }), 400
+
+    note = str(
+        data.get("note", "Admin Forex balance adjustment")
+    ).strip()
+
+    conn = get_connection()
+
+    user = conn.execute(
+        "SELECT id, forex_balance FROM users WHERE id=? AND role='user'",
+        (user_db_id,)
+    ).fetchone()
+
+    if not user:
+        conn.close()
+        return jsonify({
+            "success": False,
+            "message": "User not found."
+        }), 404
+
+    current_balance = float(user["forex_balance"] or 0)
+    new_balance = current_balance + amount
+
+    if new_balance < 0:
+        conn.close()
+        return jsonify({
+            "success": False,
+            "message": "Forex balance cannot go below zero."
+        }), 400
+
+    conn.execute(
+        "UPDATE users SET forex_balance=? WHERE id=?",
+        (new_balance, user_db_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "success": True,
+        "message": "Forex balance updated.",
+        "forex_balance": new_balance
+    })
+
 
 @app.post("/api/admin/qr-upload")
 @admin_required

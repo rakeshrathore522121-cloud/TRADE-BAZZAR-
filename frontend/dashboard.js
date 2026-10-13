@@ -333,6 +333,8 @@ function navigate(page){
   $$(".bottom-nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
   const actions={
     watchlist:()=>{loadWatchlist();loadSummary();loadHeader()},
+    forex:()=>{loadForexPage()},
+    fo:()=>{loadHeader();const active=document.querySelector("[data-fo-index].active");loadFoIndexQuote(active?.dataset.foIndex||"NIFTY 50");loadFoCandlestickChart();loadFoOptionChain(false)},
     trade:()=>{loadOrdersData();loadLedgerData()},
     positions:()=>{loadMe();loadPositions();loadSummary()},
     orders:()=>loadOrdersData(),
@@ -347,6 +349,195 @@ function navigate(page){
   if(actions[page])actions[page]();
   window.scrollTo({top:0,behavior:"smooth"});
 }
+async function loadFoIndexQuote(name){
+  const priceEl=document.getElementById("foIndexPrice");
+  const changeEl=document.getElementById("foIndexChange");
+  const selectedEl=document.getElementById("foSelectedName");
+  const chainEl=document.getElementById("foChainName");
+  if(selectedEl)selectedEl.textContent=name;
+  if(chainEl)chainEl.textContent=name;
+  if(priceEl)priceEl.textContent="Loading…";
+  if(changeEl)changeEl.textContent="Checking index quote…";
+  try{
+    const d=await api(`/market?symbols=${encodeURIComponent(name)}`);
+    const q=(d.data||[]).find(x=>String(x.symbol||"").toUpperCase()===name.toUpperCase());
+    if(!q || q.price==null) throw new Error("Quote unavailable");
+    if(priceEl)priceEl.textContent=money(q.price);
+    const change=Number(q.change||0),pct=Number(q.change_percent||0);
+    if(changeEl){
+      changeEl.textContent=`${change>=0?"▲ +":"▼ "}${money(change)} (${pct>=0?"+":""}${pct.toFixed(2)}%) · Index quote`;
+      changeEl.className=change>=0?"positive":"negative";
+    }
+  }catch(e){
+    if(priceEl)priceEl.textContent="—";
+    if(changeEl)changeEl.textContent="Index quote unavailable";
+  }
+}
+let foChartInterval="1m";
+let foChartRequest=0;
+let foChartCandles=[];
+function chartSymbolForIndex(name){
+  return String(name||"").toUpperCase().includes("BANK") ? "BANK NIFTY" : "NIFTY 50";
+}
+function setFoChartMessage(message){
+  const el=document.getElementById("foChartMessage");
+  if(el){el.textContent=message;el.hidden=false;}
+}
+function drawFoCandles(candles){
+  const canvas=document.getElementById("foCandlestickChart");
+  const message=document.getElementById("foChartMessage");
+  const axis=document.getElementById("foChartAxis");
+  if(!canvas)return;
+  const rect=canvas.getBoundingClientRect();
+  const width=Math.max(280,Math.floor(rect.width||320));
+  const height=Math.max(190,Math.floor(rect.height||230));
+  const dpr=Math.max(1,window.devicePixelRatio||1);
+  canvas.width=Math.floor(width*dpr);canvas.height=Math.floor(height*dpr);
+  const ctx=canvas.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,width,height);
+  if(!Array.isArray(candles)||candles.length<2){
+    if(message){message.textContent="Not enough real candle data for this interval.";message.hidden=false;}
+    if(axis)axis.innerHTML="<span>—</span><span>—</span><span>—</span><span>—</span>";
+    return;
+  }
+  if(message)message.hidden=true;
+  const pad={top:12,right:48,bottom:12,left:6};
+  const plotW=width-pad.left-pad.right,plotH=height-pad.top-pad.bottom;
+  const values=candles.flatMap(c=>[Number(c.high),Number(c.low)]).filter(Number.isFinite);
+  const min=Math.min(...values),max=Math.max(...values);
+  const spread=Math.max(max-min,Math.abs(max)*0.0005,0.01),lo=min-spread*0.08,hi=max+spread*0.08;
+  const y=v=>pad.top+(hi-v)/(hi-lo)*plotH;
+  // Subtle horizontal grid and right-side price labels.
+  ctx.font="10px Arial";ctx.textAlign="left";ctx.textBaseline="middle";
+  for(let i=0;i<=4;i++){
+    const val=hi-(hi-lo)*i/4, yy=pad.top+plotH*i/4;
+    ctx.strokeStyle="#e8ebef";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.left,yy);ctx.lineTo(width-pad.right+2,yy);ctx.stroke();
+    ctx.fillStyle="#77808c";ctx.fillText(val.toLocaleString("en-IN",{maximumFractionDigits:2}),width-pad.right+7,yy);
+  }
+  const step=plotW/candles.length,bodyW=Math.max(2,Math.min(9,step*0.62));
+  candles.forEach((c,i)=>{
+    const o=Number(c.open),h=Number(c.high),l=Number(c.low),cl=Number(c.close);
+    if(![o,h,l,cl].every(Number.isFinite))return;
+    const x=pad.left+step*(i+0.5),up=cl>=o,color=up?"#16a34a":"#ef4444";
+    ctx.strokeStyle=color;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y(h));ctx.lineTo(x,y(l));ctx.stroke();
+    const top=Math.min(y(o),y(cl)),bh=Math.max(1,Math.abs(y(o)-y(cl)));
+    ctx.fillStyle=color;ctx.fillRect(x-bodyW/2,top,bodyW,bh);
+  });
+  // Current/last close marker.
+  const last=Number(candles[candles.length-1].close),ly=y(last);
+  ctx.setLineDash([3,3]);ctx.strokeStyle="#b7792c";ctx.beginPath();ctx.moveTo(pad.left,ly);ctx.lineTo(width-pad.right+2,ly);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="#b7792c";ctx.fillRect(width-pad.right+3,Math.max(0,Math.min(height-17,ly-8)),pad.right-3,16);
+  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="bold 9px Arial";ctx.fillText(last.toLocaleString("en-IN",{maximumFractionDigits:2}),width-pad.right/2,Math.max(8,Math.min(height-9,ly)));
+  if(axis){
+    const fmt=t=>{const d=new Date(Number(t)*1000);if(!Number.isFinite(d.getTime()))return "—";return foChartInterval==="1d"?d.toLocaleDateString("en-IN",{day:"2-digit",month:"short"}):d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",hour12:false});};
+    const ix=[0,Math.floor((candles.length-1)/3),Math.floor((candles.length-1)*2/3),candles.length-1];
+    axis.innerHTML=ix.map(i=>`<span>${fmt(candles[i].time)}</span>`).join("");
+  }
+}
+async function loadFoCandlestickChart(){
+  const requestId=++foChartRequest;
+  const active=document.querySelector("[data-fo-index].active");
+  const symbol=chartSymbolForIndex(active?.dataset.foIndex||"NIFTY 50");
+  const status=document.getElementById("foChartStatus");
+  if(status)status.textContent=`Loading ${foChartInterval} candles…`;
+  setFoChartMessage("Loading historical price candles…");
+  try{
+    const d=await api(`/chart?symbol=${encodeURIComponent(symbol)}&interval=${encodeURIComponent(foChartInterval)}`);
+    if(requestId!==foChartRequest)return;
+    const candles=d.candles||[];
+    if(!candles.length)throw new Error(d.message||"No candle data available");
+    foChartCandles=candles;
+    drawFoCandles(candles);
+    if(status)status.textContent=`${d.interval||foChartInterval} · ${candles.length} candles · ${d.source||"market data"}`;
+  }catch(e){
+    if(requestId!==foChartRequest)return;
+    const canvas=document.getElementById("foCandlestickChart");
+    const ctx=canvas?.getContext("2d");if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height);
+    setFoChartMessage("Real candle data is currently unavailable. Try again shortly.");
+    if(status)status.textContent="Data unavailable";
+    const axis=document.getElementById("foChartAxis");if(axis)axis.innerHTML="<span>—</span><span>—</span><span>—</span><span>—</span>";
+  }
+}
+let foOptionRequest=0;
+function fmtChainNumber(value, decimals=2){
+  if(value===null || value===undefined || value==="" || !Number.isFinite(Number(value))) return "—";
+  return Number(value).toLocaleString("en-IN",{maximumFractionDigits:decimals});
+}
+function activeFoUnderlying(){
+  const name=document.querySelector("[data-fo-index].active")?.dataset.foIndex||"NIFTY 50";
+  return name.toUpperCase().includes("BANK")?"BANKNIFTY":"NIFTY";
+}
+function renderFoOptionChain(contracts){
+  const table=document.querySelector(".fo-chain-table");
+  if(!table)return;
+  const rowsByStrike=new Map();
+  (contracts||[]).forEach(c=>{
+    const strike=Number(c.strike); if(!Number.isFinite(strike))return;
+    if(!rowsByStrike.has(strike))rowsByStrike.set(strike,{});
+    rowsByStrike.get(strike)[c.type]=c;
+  });
+  const rows=[...rowsByStrike.entries()].sort((a,b)=>a[0]-b[0]);
+  const spotText=document.getElementById("foIndexPrice")?.textContent||"";
+  const spot=Number(spotText.replace(/[₹,\s]/g,""));
+  let atmStrike=null;
+  if(Number.isFinite(spot)&&spot>0&&rows.length)atmStrike=rows.reduce((best,item)=>Math.abs(item[0]-spot)<Math.abs(best-spot)?item[0]:best,rows[0][0]);
+  const header='<div class="fo-chain-row fo-chain-label"><span>LTP · OI</span><b>STRIKE</b><span>OI · LTP</span></div>';
+  const body=rows.map(([strike,legs])=>{
+    const ce=legs.CE||{},pe=legs.PE||{},atm=strike===atmStrike;
+    const ceLtp=fmtChainNumber(ce.ltp),peLtp=fmtChainNumber(pe.ltp);
+    const ceOi=fmtChainNumber(ce.oi,0),peOi=fmtChainNumber(pe.oi,0);
+    return `<button type="button" class="fo-chain-row ${atm?'fo-atm':''}" data-fo-strike="${strike}" data-fo-ce="${esc(ce.symbol||'')}" data-fo-pe="${esc(pe.symbol||'')}"><span><strong>${ceLtp}</strong><small>OI ${ceOi}</small></span><b>${fmtChainNumber(strike,0)}${atm?' <small>ATM</small>':''}</b><span><small>OI ${peOi}</small><strong>${peLtp}</strong></span></button>`;
+  }).join("");
+  table.innerHTML=header+body;
+}
+async function loadFoOptionChain(expiryChanged=false){
+  const requestId=++foOptionRequest;
+  const underlying=activeFoUnderlying();
+  const select=document.getElementById("foExpiry");
+  const requested=expiryChanged&&select?select.value:"";
+  try{
+    const query=`/fno?symbol=${encodeURIComponent(underlying)}${requested?`&expiry=${encodeURIComponent(requested)}`:""}`;
+    const d=await api(query);
+    if(requestId!==foOptionRequest)return;
+    if(select){
+      const old=requested||select.value;
+      const expiries=d.expiry_dates||[];
+      select.innerHTML=expiries.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
+      if(expiries.length){select.value=expiries.includes(old)?old:(d.selected_expiry||expiries[0]);}
+      else select.innerHTML="";
+    }
+    // If the selected expiry differs from the API's default, fetch that expiry explicitly.
+    const chosen=select?.value||"";
+    if(chosen && chosen!==d.selected_expiry && !expiryChanged){
+      const d2=await api(`/fno?symbol=${encodeURIComponent(underlying)}&expiry=${encodeURIComponent(chosen)}`);
+      if(requestId!==foOptionRequest)return;
+      renderFoOptionChain(d2.contracts||[]);return;
+    }
+    renderFoOptionChain(d.contracts||[]);
+  }catch(e){
+    if(requestId!==foOptionRequest)return;
+    // Keep the interface quiet; no error banner and no fabricated quotes.
+    renderFoOptionChain([]);
+  }
+}
+
+function initFoPreview(){
+  document.querySelectorAll("[data-fo-index]").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll("[data-fo-index]").forEach(b=>b.classList.toggle("active",b===btn));
+    loadFoIndexQuote(btn.dataset.foIndex);
+    loadFoCandlestickChart();
+    loadFoOptionChain(false);
+  }));
+  const expirySelect=document.getElementById("foExpiry");
+  if(expirySelect)expirySelect.addEventListener("change",()=>loadFoOptionChain(true));
+  loadFoOptionChain(false);
+  document.querySelectorAll(".fo-chart-controls button").forEach(btn=>btn.addEventListener("click",()=>{
+    document.querySelectorAll(".fo-chart-controls button").forEach(b=>b.classList.toggle("active",b===btn));
+    foChartInterval=btn.dataset.interval||"1m";
+    loadFoCandlestickChart();
+  }));
+  window.addEventListener("resize",()=>{if(foChartCandles.length)drawFoCandles(foChartCandles);});
+}
 async function boot(){
   loadPrefs();
   try{
@@ -355,6 +546,8 @@ async function boot(){
     navigate("watchlist");
   }catch(e){location.href="/"}
 }
+
+initFoPreview();
 
 /* Events */
 document.addEventListener("click",async e=>{
@@ -526,3 +719,411 @@ $("#logoutSettings").onclick=()=>$("#logoutModal").classList.add("open");
 $("#confirmLogout").onclick=async()=>{try{await api("/logout",{method:"POST"})}finally{location.href="/"}};
 
 boot();
+// ==========================================
+// TRADE BAZZAR — Forex TRADING
+// FOREX MARKET
+// ==========================================
+
+const forexPairsData = [
+  { symbol: "EUR/USD", price: 1.10000, digits: 5 },
+  { symbol: "GBP/USD", price: 1.27500, digits: 5 },
+  { symbol: "USD/JPY", price: 150.000, digits: 3 },
+  { symbol: "USD/CHF", price: 0.88000, digits: 5 },
+  { symbol: "AUD/USD", price: 0.66000, digits: 5 },
+  { symbol: "USD/CAD", price: 1.36000, digits: 5 },
+  { symbol: "NZD/USD", price: 0.61000, digits: 5 },
+  { symbol: "EUR/GBP", price: 0.86000, digits: 5 },
+  { symbol: "EUR/JPY", price: 165.000, digits: 3 },
+  { symbol: "GBP/JPY", price: 191.000, digits: 3 },
+  { symbol: "EUR/CHF", price: 0.96000, digits: 5 },
+  { symbol: "AUD/JPY", price: 99.000, digits: 3 },
+  { symbol: "CAD/JPY", price: 110.000, digits: 3 },
+  { symbol: "CHF/JPY", price: 170.000, digits: 3 },
+  { symbol: "GBP/CHF", price: 1.12000, digits: 5 },
+  { symbol: "EUR/AUD", price: 1.66000, digits: 5 },
+  { symbol: "EUR/CAD", price: 1.49000, digits: 5 },
+  { symbol: "GBP/CAD", price: 1.73000, digits: 5 },
+  { symbol: "AUD/CAD", price: 0.90000, digits: 5 },
+  { symbol: "NZD/JPY", price: 91.000, digits: 3 }
+];
+
+const FOREX_STARTING_BALANCE = 0;
+const FOREX_STORAGE_KEY = "tb_forex_paper_v1";
+
+let forexSelectedPair = "EUR/USD";
+let forexSearchText = "";
+let forexPaperState = {
+  balance: FOREX_STARTING_BALANCE,
+  positions: [],
+  history: []
+};
+
+function forexLoadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(FOREX_STORAGE_KEY) || "null");
+
+    if (
+      saved &&
+      Number.isFinite(saved.balance) &&
+      Array.isArray(saved.positions) &&
+      Array.isArray(saved.history)
+    ) {
+      forexPaperState = saved;
+    }
+  } catch (error) {
+    console.warn("Forex loaded.");
+  }
+}
+
+function forexSaveState() {
+  try {
+    localStorage.setItem(
+      FOREX_STORAGE_KEY,
+      JSON.stringify(forexPaperState)
+    );
+  } catch (error) {
+    console.warn("Forex demo state could not be saved.");
+  }
+}
+
+function forexMoney(value) {
+  const amount = Number(value) || 0;
+  return "$" + amount.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function forexGetPair(symbol) {
+  return forexPairsData.find(pair => pair.symbol === symbol);
+}
+
+function forexFormatPrice(pair, price) {
+  return Number(price).toFixed(pair.digits);
+}
+
+function forexCurrentPrice(symbol) {
+  const pair = forexGetPair(symbol);
+  return pair ? pair.price : 0;
+}
+
+function forexEscape(text) {
+  return String(text).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function forexPositionPnl(position) {
+  const current = forexCurrentPrice(position.symbol);
+  const difference = position.side === "BUY"
+    ? current - position.entryPrice
+    : position.entryPrice - current;
+
+  return difference * position.quantity;
+}
+
+function forexTotalOpenPnl() {
+  return forexPaperState.positions.reduce(
+    (total, position) => total + forexPositionPnl(position),
+    0
+  );
+}
+
+function updateForexSummary() {
+  const balance = document.getElementById("forexBalance");
+  const pnl = document.getElementById("forexOpenPnl");
+  const count = document.getElementById("forexPositionCount");
+  const label = document.getElementById("forexPositionsLabel");
+
+  if (balance) balance.textContent = forexMoney(forexPaperState.balance);
+
+  const openPnl = forexTotalOpenPnl();
+
+  if (pnl) {
+    pnl.textContent = (openPnl >= 0 ? "+" : "") + forexMoney(openPnl);
+    pnl.classList.toggle("positive", openPnl >= 0);
+    pnl.classList.toggle("negative", openPnl < 0);
+  }
+
+  if (count) count.textContent = forexPaperState.positions.length;
+  if (label) label.textContent = forexPaperState.positions.length + " OPEN";
+}
+
+function renderForexPairs() {
+  const container = document.getElementById("forexPairs");
+  if (!container) return;
+
+  const filtered = forexPairsData.filter(pair =>
+    pair.symbol.toLowerCase().includes(forexSearchText.toLowerCase())
+  );
+
+  if (!filtered.length) {
+    container.innerHTML =
+      '<div class="forex-empty">No currency pair found.</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(pair => {
+    const active = pair.symbol === forexSelectedPair;
+    const price = forexFormatPrice(pair, pair.price);
+
+    return `
+      <button type="button"
+        class="forex-pair-row ${active ? "active" : ""}"
+        data-forex-symbol="${forexEscape(pair.symbol)}">
+        <span class="forex-pair-name">
+          <strong>${forexEscape(pair.symbol)}</strong>
+          <small>Currency Market</small>
+        </span>
+        <span class="forex-pair-price">${price}</span>
+        <span class="forex-pair-action">TRADE</span>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-forex-symbol]").forEach(button => {
+    button.addEventListener("click", () => {
+      selectForexPair(button.dataset.forexSymbol);
+    });
+  });
+}
+
+function selectForexPair(symbol) {
+  const pair = forexGetPair(symbol);
+  if (!pair) return;
+
+  forexSelectedPair = symbol;
+
+  const panel = document.getElementById("forexTradePanel");
+  const selectedSymbol = document.getElementById("forexSelectedSymbol");
+  const selectedPrice = document.getElementById("forexSelectedPrice");
+
+  if (panel) panel.hidden = false;
+  if (selectedSymbol) selectedSymbol.textContent = pair.symbol;
+  if (selectedPrice) {
+    selectedPrice.textContent = forexFormatPrice(pair, pair.price);
+  }
+
+  renderForexPairs();
+}
+
+function renderForexPositions() {
+  const container = document.getElementById("forexPositions");
+  if (!container) return;
+
+  if (!forexPaperState.positions.length) {
+    container.innerHTML =
+      '<div class="forex-empty">No open Forex positions.</div>';
+    return;
+  }
+
+  container.innerHTML = forexPaperState.positions.map(position => {
+    const pnl = forexPositionPnl(position);
+    const pair = forexGetPair(position.symbol);
+
+    return `
+      <div class="forex-position-card">
+        <div class="forex-position-top">
+          <strong>${forexEscape(position.symbol)}</strong>
+          <span class="${position.side === "BUY" ? "positive" : "negative"}">
+            ${position.side}
+          </span>
+        </div>
+        <div class="forex-position-details">
+          <span>Quantity: ${position.quantity.toLocaleString("en-US")}</span>
+          <span>Entry: ${forexFormatPrice(pair, position.entryPrice)}</span>
+        </div>
+        <div class="forex-position-bottom">
+          <span>Unrealized P&amp;L</span>
+          <strong class="${pnl >= 0 ? "positive" : "negative"}">
+            ${pnl >= 0 ? "+" : ""}${forexMoney(pnl)}
+          </strong>
+        </div>
+        <button type="button"
+          class="forex-close-position"
+          data-forex-close="${forexEscape(position.id)}">
+          CLOSE POSITION
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-forex-close]").forEach(button => {
+    button.addEventListener("click", () => {
+      closeForexPosition(button.dataset.forexClose);
+    });
+  });
+}
+
+function renderForexHistory() {
+  const container = document.getElementById("forexHistory");
+  if (!container) return;
+
+  if (!forexPaperState.history.length) {
+    container.innerHTML =
+      '<div class="forex-empty">No completed Forex trades.</div>';
+    return;
+  }
+
+  container.innerHTML = forexPaperState.history.slice(0, 30).map(trade => `
+    <div class="forex-history-row">
+      <div>
+        <strong>${forexEscape(trade.symbol)}</strong>
+        <small>${forexEscape(trade.side)} · ${forexEscape(trade.time)}</small>
+      </div>
+      <div class="forex-history-result">
+        <strong class="${trade.pnl >= 0 ? "positive" : "negative"}">
+          ${trade.pnl >= 0 ? "+" : ""}${forexMoney(trade.pnl)}
+        </strong>
+        <small>Live P&amp;L</small>
+      </div>
+    </div>
+  `).join("");
+}
+
+function refreshForexScreen() {
+  renderForexPairs();
+  renderForexPositions();
+  renderForexHistory();
+  updateForexSummary();
+
+  const pair = forexGetPair(forexSelectedPair);
+  const price = document.getElementById("forexSelectedPrice");
+
+  if (pair && price) {
+    price.textContent = forexFormatPrice(pair, pair.price);
+  }
+}
+
+function loadForexPage() {
+  refreshForexScreen();
+}
+
+function forexOpenTrade(side) {
+  const pair = forexGetPair(forexSelectedPair);
+  const quantityInput = document.getElementById("forexQuantity");
+  const quantity = Number(quantityInput?.value);
+
+  if (!pair) {
+    if (typeof toast === "function") toast("Select a currency pair first.");
+    return;
+  }
+
+  if (!Number.isSafeInteger(quantity) || quantity < 1) {
+    if (typeof toast === "function") toast("Enter a valid whole-number quantity.");
+    return;
+  }
+
+  // Reserve a simulated margin of 1% of the notional trade value.
+  const requiredMargin = quantity * pair.price * 0.01;
+
+  if (requiredMargin > forexPaperState.balance) {
+    if (typeof toast === "function") {
+      toast("Insufficient virtual balance for this trade.");
+    }
+    return;
+  }
+
+  forexPaperState.balance -= requiredMargin;
+
+  forexPaperState.positions.unshift({
+    id: "fx_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+    symbol: pair.symbol,
+    side,
+    quantity,
+    entryPrice: pair.price,
+    margin: requiredMargin,
+    openedAt: new Date().toLocaleString()
+  });
+
+  forexSaveState();
+  refreshForexScreen();
+
+  if (typeof toast === "function") {
+    toast("- " + side + " order opened.");
+  }
+}
+
+function closeForexPosition(id) {
+  const index = forexPaperState.positions.findIndex(position => position.id === id);
+  if (index < 0) return;
+
+  const position = forexPaperState.positions[index];
+  const pnl = forexPositionPnl(position);
+
+  // Return reserved margin and add/subtract the simulated result.
+  forexPaperState.balance += position.margin + pnl;
+
+  forexPaperState.history.unshift({
+    symbol: position.symbol,
+    side: position.side,
+    quantity: position.quantity,
+    entryPrice: position.entryPrice,
+    exitPrice: forexCurrentPrice(position.symbol),
+    pnl,
+    time: new Date().toLocaleString()
+  });
+
+  forexPaperState.positions.splice(index, 1);
+
+  forexPaperState.history = forexPaperState.history.slice(0, 100);
+
+  forexSaveState();
+  refreshForexScreen();
+
+  if (typeof toast === "function") {
+    toast("position closed. P&L: " + forexMoney(pnl));
+  }
+}
+
+function initForexPaperTrading() {
+  if (!document.getElementById("view-forex")) return;
+
+  forexLoadState();
+  refreshForexScreen();
+
+  const search = document.getElementById("forexSearch");
+  const refreshButton = document.getElementById("refreshForex");
+  const buyButton = document.getElementById("forexBuy");
+  const sellButton = document.getElementById("forexSell");
+
+  if (search) {
+    search.addEventListener("input", () => {
+      forexSearchText = search.value.trim();
+      renderForexPairs();
+    });
+  }
+
+  if (refreshButton) {
+    refreshButton.addEventListener("click", () => {
+      refreshForexScreen();
+      if (typeof toast === "function") {
+        toast("Prices refreshed.");
+      }
+    });
+  }
+
+  if (buyButton) {
+    buyButton.addEventListener("click", () => forexOpenTrade("BUY"));
+  }
+
+  if (sellButton) {
+    sellButton.addEventListener("click", () => forexOpenTrade("SELL"));
+  }
+
+  // Move live prices slightly. These are generated prices, live quotes.
+  window.setInterval(() => {
+    forexPairsData.forEach(pair => {
+      const movement = (Math.random() - 0.5) * pair.price * 0.001;
+      pair.price = Math.max(pair.price + movement, 0.00001);
+    });
+
+    refreshForexScreen();
+  }, 5000);
+}
+
+initForexPaperTrading();

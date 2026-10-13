@@ -559,3 +559,524 @@ body.dark .ticker-wrap,body.dark .app-header{background:var(--bg)}body.dark .mod
   body.size-L .detail-price{font-size:46px}
   body.size-XL .detail-price{font-size:50px}
 }
+
+
+/* F&O section styles — isolated from existing screens */
+.fo-screen{padding-top:18px}.fo-heading{display:flex;justify-content:space-between;align-items:center;margin:4px 0 15px}.fo-eyebrow{font-size:10px;letter-spacing:1.8px;color:var(--gold);font-weight:800}.fo-heading h2{margin:3px 0 0;font-size:23px}.fo-data-badge{font-size:9px;font-weight:800;color:#8a5a16;background:#f4eee5;border:1px solid #e5d2b4;border-radius:20px;padding:7px 9px}.fo-index-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.fo-index-tabs button,.fo-chart-controls button{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:12px;padding:10px 6px;font-size:12px;font-weight:800}.fo-index-tabs button.active,.fo-chart-controls button.active{background:var(--gold);color:white;border-color:var(--gold)}.fo-price-card{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:17px;padding:15px;margin-bottom:10px}.fo-price-card span{display:block;font-size:14px;font-weight:800}.fo-price-card small{display:block;font-size:10px;color:var(--muted);margin-top:5px}.fo-price-right{text-align:right}.fo-price-right strong{font-size:21px}.fo-notice{font-size:10px;line-height:1.45;color:#76521e;background:#fff8e9;border:1px solid #f0dfbd;border-radius:12px;padding:10px;margin:10px 0 18px}.fo-section-title,.fo-chain-head{display:flex;align-items:center;justify-content:space-between;margin:12px 0 9px}.fo-section-title strong,.fo-chain-head strong{font-size:13px;letter-spacing:.8px}.fo-section-title span,.fo-chain-head small{font-size:10px;color:var(--muted)}.fo-chart-controls{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.fo-chart-controls button{padding:8px 2px;font-size:11px}.fo-chart{position:relative;background:#fff;border:1px solid var(--line);border-radius:15px;margin-top:8px;padding:10px 8px 7px;overflow:hidden}.fo-chart-grid{position:absolute;inset:12px 8px 30px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 28px,#e9edf0 29px,#e9edf0 30px);pointer-events:none}.fo-chart canvas{position:relative;width:100%;height:230px;display:block;touch-action:pan-y}.fo-chart-message{position:absolute;inset:12px 8px 30px;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;color:var(--muted);font-size:12px;pointer-events:none}.fo-chart-message[hidden]{display:none}.fo-chart-axis{display:flex;justify-content:space-between;color:var(--muted);font-size:9px;margin-top:3px}.fo-chain-head{margin-top:20px}.fo-chain-head small{display:block;margin-top:4px}.fo-chain-head label{font-size:9px;color:var(--muted);font-weight:800}.fo-chain-head select{display:block;max-width:135px;margin-top:4px;border:1px solid var(--line);border-radius:8px;background:white;padding:7px;font-size:10px;color:var(--text)}.fo-chain-legend,.fo-chain-row{display:grid;grid-template-columns:1fr 90px 1fr;align-items:center;gap:4px;text-align:center}.fo-chain-legend{background:#f4eee5;color:var(--gold);border-radius:9px 9px 0 0;padding:9px 4px;font-size:10px;font-weight:800}.fo-chain-row{width:100%;border:0;border-bottom:1px solid var(--line);background:#fff;padding:10px 4px;color:var(--text);font-size:11px}.fo-chain-row span{display:flex;justify-content:center;gap:4px;align-items:center}.fo-chain-row small{display:block;color:var(--muted);font-size:9px}.fo-chain-row b{font-size:12px}.fo-chain-row.fo-chain-label{background:#faf8f5;font-size:9px;color:var(--muted);font-weight:700}.fo-chain-row.fo-atm{background:#fff5df;border-left:3px solid var(--gold);border-right:3px solid var(--gold)}.fo-atm b small{color:var(--gold);font-size:8px}.fo-bottom-note{font-size:10px;line-height:1.45;color:var(--muted);padding:10px 2px 20px}.bottom-nav{grid-template-columns:repeat(6,minmax(0,1fr))}.bottom-nav button strong{font-size:11px;letter-spacing:.45px}.bottom-nav .nav-icon{font-size:25px}@media(max-width:650px){.bottom-nav button strong{font-size:9px;letter-spacing:0}.bottom-nav .nav-icon{width:27px;height:27px;flex-basis:27px;font-size:23px}.bottom-nav button{gap:3px;padding-left:0;padding-right:0}.fo-screen{padding-left:12px;padding-right:12px}}
+
+/* Candlestick chart improvements */
+.fo-chart{min-height:265px}
+.fo-chart-grid{inset:12px 8px 30px}
+.fo-chart-controls button{cursor:pointer}
+.fo-chart-axis span{white-space:nowrap}
+@media(max-width:420px){.fo-chart canvas{height:210px}.fo-chart{min-height:245px}}
+/* ======================================
+   TRADE BAZZAR — FOREX MOBILE UI
+   ====================================== */
+
+.forex-screen {
+  padding: 16px;
+  padding-bottom: 100px;
+  color: var(--text, #f5f5f5);
+}
+
+.forex-screen .screen-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.forex-screen .screen-header > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.forex-screen .screen-header h2 {
+  margin: 0 0 5px;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.forex-demo-badge {
+  display: inline-block;
+  color: #e7bd66;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.forex-balance-card {
+  padding: 20px;
+  border: 1px solid rgba(218, 174, 81, 0.3);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #242016, #111111 75%);
+  margin-bottom: 25px;
+}
+
+.forex-balance-card > span {
+  display: block;
+  color: #bcb8ad;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.forex-balance-card > strong {
+  display: block;
+  color: #f1c96c;
+  font-size: clamp(26px, 7vw, 34px);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.forex-balance-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.forex-balance-stats > div {
+  min-width: 0;
+}
+
+.forex-balance-stats small {
+  display: block;
+  color: #aaa69c;
+  font-size: 10px;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.forex-balance-stats strong {
+  display: block;
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.forex-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 24px 0 13px;
+}
+
+.forex-section-heading h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.forex-section-heading > span {
+  color: #d9b65e;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.forex-search {
+  margin-bottom: 12px;
+}
+
+.forex-search input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.forex-search input:focus {
+  border-color: #d9b65e;
+}
+
+.forex-pairs-list,
+.forex-positions-list,
+.forex-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.forex-pair-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 68px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.035);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.forex-pair-row.active {
+  border-color: #d9b65e;
+  background: rgba(217, 182, 94, 0.09);
+}
+
+.forex-pair-name {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.forex-pair-name strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.forex-pair-name small {
+  color: #a7a7a7;
+  font-size: 10px;
+}
+
+.forex-pair-price {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.forex-pair-action {
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: rgba(217, 182, 94, 0.13);
+  color: #e9c66d;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.forex-trade-panel {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid rgba(217, 182, 94, 0.28);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.forex-trade-panel[hidden] {
+  display: none !important;
+}
+
+.forex-selected-pair {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.forex-selected-pair > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.forex-selected-pair > div strong {
+  font-size: 17px;
+}
+
+.forex-selected-pair small {
+  color: #aaa;
+  font-size: 11px;
+}
+
+.forex-selected-pair > strong {
+  color: #e9c66d;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.forex-trade-panel label {
+  display: block;
+  margin-bottom: 8px;
+  color: #d0d0d0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.forex-trade-panel input {
+  width: 100%;
+  min-height: 45px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+}
+
+.forex-trade-panel input:focus {
+  border-color: #d9b65e;
+}
+
+.forex-trade-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.forex-trade-actions button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 11px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.forex-buy-button {
+  background: #13865b;
+}
+
+.forex-sell-button {
+  background: #c3444b;
+}
+
+.forex-demo-note,
+.forex-disclaimer {
+  color: #aaa69c;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.forex-demo-note {
+  margin: 14px 0 0;
+}
+
+.forex-disclaimer {
+  margin-top: 24px;
+  padding: 12px;
+  border: 1px solid rgba(217, 182, 94, 0.2);
+  border-radius: 10px;
+  background: rgba(217, 182, 94, 0.05);
+}
+
+.forex-position-card {
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.forex-position-top,
+.forex-position-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.forex-position-top strong {
+  font-size: 14px;
+}
+
+.forex-position-top span {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.forex-position-details {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 13px 0;
+  color: #aaa;
+  font-size: 11px;
+}
+
+.forex-position-bottom {
+  padding-top: 11px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.forex-position-bottom span {
+  color: #aaa;
+  font-size: 11px;
+}
+
+.forex-position-bottom strong {
+  font-size: 13px;
+}
+
+.forex-close-position {
+  width: 100%;
+  min-height: 38px;
+  margin-top: 13px;
+  border: 1px solid rgba(220, 90, 90, 0.35);
+  border-radius: 9px;
+  background: rgba(220, 70, 70, 0.08);
+  color: #ff8b8b;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.forex-history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.forex-history-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.forex-history-row strong {
+  font-size: 13px;
+}
+
+.forex-history-row small {
+  color: #aaa;
+  font-size: 10px;
+}
+
+.forex-history-result {
+  text-align: right;
+}
+
+.forex-empty,
+.forex-loading {
+  padding: 20px 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  color: #aaa;
+  font-size: 12px;
+  text-align: center;
+}
+
+.forex-screen .positive {
+  color: #38d99a;
+}
+
+.forex-screen .negative {
+  color: #ff7777;
+}
+
+@media (max-width: 360px) {
+  .forex-screen {
+    padding-right: 11px;
+    padding-left: 11px;
+  }
+
+  .forex-pair-row {
+    gap: 7px;
+    padding: 10px 8px;
+  }
+
+  .forex-pair-price {
+    font-size: 11px;
+  }
+
+  .forex-pair-action {
+    padding: 7px;
+    font-size: 9px;
+  }
+}
+/* TRADE BAZZAR - Restore bottom navigation labels */
+.bottom-nav {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  overflow: visible;
+}
+
+.bottom-nav button {
+  min-width: 0;
+  overflow: visible;
+  justify-content: center;
+  gap: 4px;
+}
+
+.bottom-nav button strong {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100%;
+  max-width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.bottom-nav .nav-icon {
+  flex-shrink: 0;
+}
+
+@media (max-width: 380px) {
+  .bottom-nav button strong {
+    font-size: 8px;
+    letter-spacing: -0.2px;
+  }
+}
+/* TRADE BAZZAR - Bottom Navigation Single Row Fix */
+.bottom-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-around !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.bottom-nav button {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+}
+
+.bottom-nav button strong {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 9px !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
+
+.bottom-nav .nav-icon {
+    flex-shrink: 0 !important;
+}
+
+@media (max-width: 380px) {
+    .bottom-nav button strong {
+        font-size: 7px !important;
+    }
+}

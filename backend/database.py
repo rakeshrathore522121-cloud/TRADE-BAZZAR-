@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS users (
     dob TEXT DEFAULT '',
     email TEXT DEFAULT '',
     balance DOUBLE PRECISION NOT NULL DEFAULT 0,
+    forex_balance DOUBLE PRECISION NOT NULL DEFAULT 0,
     active INTEGER NOT NULL DEFAULT 1,
     blocked INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -230,6 +231,10 @@ def _init_postgres():
     try:
         cur = conn._conn.cursor()
         cur.execute(POSTGRES_SCHEMA)
+        cur.execute("""
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS forex_balance DOUBLE PRECISION NOT NULL DEFAULT 0
+""")
         conn.commit()
     finally:
         conn.close()
@@ -268,7 +273,7 @@ def init_database():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = get_connection()
     conn.executescript("""
-    CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,user_id TEXT UNIQUE NOT NULL,password_hash TEXT NOT NULL,role TEXT NOT NULL DEFAULT 'user',name TEXT DEFAULT '',aadhaar TEXT DEFAULT '',pan TEXT DEFAULT '',mobile TEXT DEFAULT '',dob TEXT DEFAULT '',email TEXT DEFAULT '',balance REAL NOT NULL DEFAULT 0,active INTEGER NOT NULL DEFAULT 1,blocked INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT,user_id TEXT UNIQUE NOT NULL,password_hash TEXT NOT NULL,role TEXT NOT NULL DEFAULT 'user',name TEXT DEFAULT '',aadhaar TEXT DEFAULT '',pan TEXT DEFAULT '',mobile TEXT DEFAULT '',dob TEXT DEFAULT '',email TEXT DEFAULT '',balance REAL NOT NULL DEFAULT 0,forex_balance REAL NOT NULL DEFAULT 0,active INTEGER NOT NULL DEFAULT 1,blocked INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE IF NOT EXISTS watchlists (id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,list_no INTEGER NOT NULL DEFAULT 1,symbol TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE(user_id,list_no,symbol),FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
     CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,symbol TEXT NOT NULL,side TEXT NOT NULL,quantity INTEGER NOT NULL,price REAL NOT NULL,status TEXT NOT NULL DEFAULT 'EXECUTED',pnl REAL NOT NULL DEFAULT 0,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
     CREATE TABLE IF NOT EXISTS positions (id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,symbol TEXT NOT NULL,quantity INTEGER NOT NULL DEFAULT 0,avg_price REAL NOT NULL DEFAULT 0,realized_pnl REAL NOT NULL DEFAULT 0,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE(user_id,symbol),FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);
@@ -279,6 +284,16 @@ def init_database():
     CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY,value TEXT NOT NULL DEFAULT '');
     CREATE TABLE IF NOT EXISTS news (id INTEGER PRIMARY KEY AUTOINCREMENT,headline TEXT NOT NULL,active INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
     """)
+    columns = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(users)").fetchall()
+    }
+
+    if "forex_balance" not in columns:
+        conn.execute(
+            "ALTER TABLE users ADD COLUMN forex_balance REAL NOT NULL DEFAULT 0"
+        )
+
     admin = conn.execute("SELECT id FROM users WHERE role='admin' LIMIT 1").fetchone()
     if not admin:
         conn.execute("INSERT INTO users (user_id,password_hash,role,name,email) VALUES (?,?,?,?,?)", ("admin", generate_password_hash("Admin@123"), "admin", "Trade Bazzar Admin", "admin@tradebazzar.local"))
