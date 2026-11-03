@@ -10,7 +10,10 @@ from flask import Flask, request, jsonify, session, send_from_directory, make_re
 from flask_cors import CORS
 from werkzeug.security import check_password_hash
 
-from database import get_connection, init_database, IntegrityError
+try:
+    from .database import get_connection, init_database, IntegrityError
+except ImportError:
+    from database import get_connection, init_database, IntegrityError
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
