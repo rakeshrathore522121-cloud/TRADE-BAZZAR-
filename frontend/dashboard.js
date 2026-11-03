@@ -999,8 +999,22 @@ function refreshForexScreen() {
   }
 }
 
-function loadForexPage() {
+async function loadForexBalanceFromServer() {
+  try {
+    const data = await api("/forex/balance");
+    if (data && Number.isFinite(Number(data.forex_balance))) {
+      forexPaperState.balance = Number(data.forex_balance);
+      forexSaveState();
+      updateForexSummary();
+    }
+  } catch (error) {
+    console.warn("Forex balance could not be refreshed from the account.", error);
+  }
+}
+
+async function loadForexPage() {
   refreshForexScreen();
+  await loadForexBalanceFromServer();
 }
 
 function forexOpenTrade(side) {
@@ -1099,10 +1113,11 @@ function initForexPaperTrading() {
   }
 
   if (refreshButton) {
-    refreshButton.addEventListener("click", () => {
+    refreshButton.addEventListener("click", async () => {
       refreshForexScreen();
+      await loadForexBalanceFromServer();
       if (typeof toast === "function") {
-        toast("Prices refreshed.");
+        toast("Forex balance and prices refreshed.");
       }
     });
   }
